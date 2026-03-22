@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Combat Cover — Train Hard. Protect Smarter.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:           #F7F7F7;
+  --text:         #111111;
+  --accent:       #8B7355;
+  --accent-lt:    #D4C5A9;
+  --mid:          #686868;
+  --border:       #E0DDD8;
+  --dark-bg:      #111111;
+  --warm:         #F0EDE8;
+  --font:         'Inter', -apple-system, 'Helvetica Neue', sans-serif;
+  --ease:         cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html { scroll-behavior: smooth; background: var(--bg); color: var(--text);
+       font-family: var(--font); -webkit-font-smoothing: antialiased; }
+body { overflow-x: hidden; }
+
+a { text-decoration: none; color: inherit; }
+
+/* ============================================================
+   3D PRODUCT VIEWER — fixed right half
+   ============================================================ */
+#product-viewer {
+  position: fixed;
+  top: 0; right: 0;
+  width: 50%; height: 100vh;
+  z-index: 10;
+  pointer-events: none;
+  background: var(--bg);
+  transition: background 0.6s var(--ease), opacity 0.6s var(--ease);
+}
+#product-viewer.dark  { background: var(--dark-bg); }
+#product-viewer.warm  { background: var(--warm); }
+#product-viewer.gone  { opacity: 0; pointer-events: none; }
+
+#three-canvas { width: 100%; height: 100%; display: block; }
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 200;
+  height: 68px;
+  padding: 0 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.4s, border-color 0.4s, backdrop-filter 0.4s;
+}
+nav.solid {
+  background: rgba(247,247,247,0.92);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-size: 12px; font-weight: 800;
+  letter-spacing: 0.18em; text-transform: uppercase;
+}
+.nav-logo em { font-style: normal; color: var(--accent); }
+
+.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav-links a {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--mid);
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+
+.nav-links .cta-link {
+  background: var(--text); color: var(--bg);
+  padding: 9px 22px; border-radius: 2px;
+  transition: background 0.2s, transform 0.2s;
+}
+.nav-links .cta-link:hover { background: var(--accent); color: #fff; transform: translateY(-1px); }
+
+/* ============================================================
+   LEFT-SIDE SECTIONS (width: 50%, stacks on left)
+   ============================================================ */
+.left-section {
+  width: 50%;
+  min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 120px 64px;
+  position: relative;
+}
+
+/* ============================================================
+   SHARED TYPOGRAPHY ATOMS
+   ============================================================ */
+.overline {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--accent);
+  display: block; margin-bottom: 20px;
+}
+.overline.light { color: var(--accent-lt); }
+
+.headline {
+  font-size: clamp(36px, 4vw, 58px);
+  font-weight: 900;
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  margin-bottom: 24px;
+}
+
+.body-text {
+  font-size: 16px; line-height: 1.72;
+  color: var(--mid); max-width: 420px;
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+#hero { padding-top: 140px; }
+
+.hero-headline {
+  font-size: clamp(52px, 5.5vw, 84px);
+  font-weight: 900;
+  line-height: 1.0;
+  letter-spacing: -0.04em;
+  margin-bottom: 28px;
+}
+.hero-headline em { font-style: normal; color: var(--accent); }
+
+.hero-body {
+  font-size: 17px; line-height: 1.68;
+  color: var(--mid); max-width: 440px;
+  margin-bottom: 48px;
+}
+
+.hero-actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+
+.btn {
+  display: inline-block;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 16px 38px; border-radius: 2px;
+  cursor: pointer; border: none;
+  transition: background 0.2s, color 0.2s, transform 0.2s, border-color 0.2s;
+}
+.btn-dark  { background: var(--text); color: var(--bg); }
+.btn-dark:hover  { background: var(--accent); transform: translateY(-2px); }
+.btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--text); transform: translateY(-2px); }
+.btn-light { background: #fff; color: var(--text); }
+.btn-light:hover { background: var(--accent-lt); transform: translateY(-2px); }
+
+.scroll-hint {
+  position: absolute; bottom: 44px; left: 64px;
+  display: flex; align-items: center; gap: 14px;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--mid);
+}
+.scroll-line {
+  width: 44px; height: 1px;
+  background: var(--border); position: relative; overflow: hidden;
+}
+.scroll-line::after {
+  content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: var(--accent);
+  animation: scan 2s ease-in-out infinite 1s;
+}
+
+/* ============================================================
+   CONCEPT (dark)
+   ============================================================ */
+#concept {
+  background: var(--dark-bg); color: #fff;
+}
+#concept .overline { color: var(--accent-lt); }
+#concept .body-text { color: rgba(247,247,247,0.58); }
+#concept .headline { color: #fff; }
+
+/* ============================================================
+   FEATURES
+   ============================================================ */
+.feature-block {
+  width: 50%;
+  min-height: 80vh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 100px 64px;
+  border-bottom: 1px solid var(--border);
+}
+.feature-block:last-child { border-bottom: none; }
+
+.feature-num {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 20px;
+}
+
+/* ============================================================
+   MATERIALS (warm bg)
+   ============================================================ */
+#materials { background: var(--warm); }
+
+.material-list { list-style: none; margin-top: 48px; }
+.material-row {
+  display: flex; align-items: flex-start; gap: 28px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--border);
+}
+.material-row:first-child { border-top: 1px solid var(--border); }
+
+.material-idx {
+  font-size: 10px; font-weight: 800; color: var(--accent);
+  letter-spacing: 0.12em; min-width: 24px; padding-top: 4px;
+}
+.material-info h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
+.material-info p  { font-size: 14px; color: var(--mid); line-height: 1.55; }
+
+/* ============================================================
+   FULL-WIDTH SECTIONS (after canvas goes)
+   ============================================================ */
+.full-section {
+  padding: 120px 10% 120px;
+}
+
+.section-head { max-width: 540px; margin-bottom: 64px; }
+
+/* INCLUDES grid */
+.includes-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 2px; background: var(--border);
+}
+.include-card {
+  background: var(--bg);
+  padding: 52px 44px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.include-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent);
+}
+.include-card h4 { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.include-card p  { font-size: 14px; line-height: 1.6; color: var(--mid); }
+
+/* CARE grid */
+.care-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+.care-col h3 { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 24px; }
+.care-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.care-list li {
+  font-size: 15px; color: var(--mid); line-height: 1.55;
+  padding-left: 22px; position: relative;
+}
+.care-list li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
+
+/* ============================================================
+   CTA
+   ============================================================ */
+#cta {
+  background: var(--dark-bg);
+  min-height: 80vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 120px 20%;
+}
+.cta-pre  { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+             color: var(--accent-lt); margin-bottom: 24px; }
+.cta-head { font-size: clamp(38px, 4.5vw, 64px); font-weight: 900; line-height: 1.05;
+             letter-spacing: -0.035em; color: #fff; margin-bottom: 32px; max-width: 640px; }
+.cta-sub  { font-size: 16px; line-height: 1.68; color: rgba(247,247,247,0.5);
+             margin-bottom: 56px; max-width: 460px; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  background: #080808;
+  padding: 72px 10%;
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 48px;
+}
+.ft-brand .ft-logo {
+  font-size: 12px; font-weight: 800; letter-spacing: 0.18em;
+  text-transform: uppercase; color: #fff; margin-bottom: 12px;
+}
+.ft-brand .ft-tag {
+  font-size: 11px; color: rgba(255,255,255,0.28);
+  letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.6;
+}
+
+.ft-col h5 {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; color: rgba(255,255,255,0.3);
+  margin-bottom: 20px;
+}
+.ft-col ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.ft-col a { font-size: 13px; color: rgba(255,255,255,0.55); transition: color 0.2s; }
+.ft-col a:hover { color: #fff; }
+
+.ft-copy {
+  grid-column: 1 / -1;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 32px;
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: rgba(255,255,255,0.22);
+}
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.85s var(--ease), transform 0.85s var(--ease);
+}
+.reveal.delay-1 { transition-delay: 0.1s; }
+.reveal.delay-2 { transition-delay: 0.2s; }
+.reveal.delay-3 { transition-delay: 0.32s; }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* Load-in for hero */
+.load-in { opacity: 0; transform: translateY(18px); }
+.load-in.go { animation: fadeUp 0.9s var(--ease) forwards; }
+@keyframes fadeUp { to { opacity: 1; transform: none; } }
+
+/* ============================================================
+   KEYFRAMES
+   ============================================================ */
+@keyframes scan {
+  0%   { left: -100%; }
+  100% { left:  110%; }
+}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+@media (max-width: 900px) {
+
+  #product-viewer {
+    position: relative;
+    width: 100%; height: 72vw;
+    top: auto; right: auto;
+  }
+
+  .left-section,
+  .feature-block {
+    width: 100%;
+    padding: 80px 32px;
+  }
+
+  #hero { padding-top: 110px; }
+
+  nav { padding: 0 24px; }
+
+  .includes-grid { grid-template-columns: 1fr; }
+  .care-grid     { grid-template-columns: 1fr; gap: 40px; }
+
+  footer {
+    grid-template-columns: 1fr;
+    padding: 56px 32px;
+  }
+
+  .full-section { padding: 80px 32px; }
+
+  #cta { padding: 100px 32px; }
+
+  .scroll-hint { display: none; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     PRODUCT VIEWER
+     ============================================================ -->
+<div id="product-viewer">
+  <canvas id="three-canvas"></canvas>
+</div>
+
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">Combat <em>Cover</em></a>
+  <ul class="nav-links">
+    <li><a href="#concept">Product</a></li>
+    <li><a href="#materials">Specs</a></li>
+    <li><a href="#cta" class="cta-link">Pre-order</a></li>
+  </ul>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section id="hero" class="left-section">
+  <span class="overline load-in" style="animation-delay:0.1s">Where there is preparation, there is no fear</span>
+  <h1 class="hero-headline load-in" style="animation-delay:0.25s">
+    Train Hard.<br><em>Protect</em><br>Smarter.
+  </h1>
+  <p class="hero-body load-in" style="animation-delay:0.42s">
+    Combat Covers are precision-fit sleeves that eliminate velcro scratches
+    and stabilize your gloves during high-intensity training.
+  </p>
+  <div class="hero-actions load-in" style="animation-delay:0.58s">
+    <a href="#cta" class="btn btn-dark">Pre-order</a>
+    <a href="#concept" class="btn btn-ghost">See how it works</a>
+  </div>
+  <div class="scroll-hint load-in" style="animation-delay:1.1s">
+    <span class="scroll-line"></span>
+    <span>Scroll to explore</span>
+  </div>
+</section>
+
+<!-- ============================================================
+     CONCEPT
+     ============================================================ -->
+<section id="concept" class="left-section">
+  <span class="overline light reveal">The Problem</span>
+  <h2 class="headline reveal delay-1">Designed for<br>Real Training</h2>
+  <p class="body-text reveal delay-2">
+    Combat Covers solve a simple but overlooked problem: exposed velcro during
+    sparring. By creating a secure, low-profile barrier, they protect your
+    training partners without compromising performance or glove fit.
+  </p>
+</section>
+
+<!-- ============================================================
+     FEATURES
+     ============================================================ -->
+<div id="features">
+
+  <div class="feature-block">
+    <p class="feature-num reveal">01 — Safety</p>
+    <h3 class="headline reveal delay-1">No More Velcro<br>Scratches</h3>
+    <p class="body-text reveal delay-2">
+      A seamless outer layer prevents exposed hook surfaces from catching
+      skin or fabric during sparring, grappling, and clinch work.
+    </p>
+  </div>
+
+  <div class="feature-block">
+    <p class="feature-num reveal">02 — Fit</p>
+    <h3 class="headline reveal delay-1">Locked-In<br>Stability</h3>
+    <p class="body-text reveal delay-2">
+      Silicone inner lining grips the glove surface, ensuring zero slippage
+      during grappling, striking, or transitions — no mid-round adjustment.
+    </p>
+  </div>
+
+  <div class="feature-block">
+    <p class="feature-num reveal">03 — Comfort</p>
+    <h3 class="headline reveal delay-1">Built for Long<br>Sessions</h3>
+    <p class="body-text reveal delay-2">
+      Breathable, moisture-wicking spandex keeps you comfortable and
+      performing through intense rounds without distraction or heat build-up.
+    </p>
+  </div>
+
+  <div class="feature-block">
+    <p class="feature-num reveal">04 — Compatibility</p>
+    <h3 class="headline reveal delay-1">One Fit.<br>All Gloves.</h3>
+    <p class="body-text reveal delay-2">
+      Designed to stretch across MMA, boxing, and hybrid glove systems.
+      One size fits the wrist base of most combat gloves.
+    </p>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     MATERIALS
+     ============================================================ -->
+<section id="materials" class="left-section">
+  <span class="overline reveal">Engineering</span>
+  <h2 class="headline reveal delay-1">Engineered<br>Materials</h2>
+  <ul class="material-list">
+    <li class="material-row reveal">
+      <span class="material-idx">01</span>
+      <div class="material-info">
+        <h4>Spandex Outer Shell</h4>
+        <p>Stretch spandex blend — breathable, abrasion-resistant, and moisture-wicking for all training environments.</p>
+      </div>
+    </li>
+    <li class="material-row reveal delay-1">
+      <span class="material-idx">02</span>
+      <div class="material-info">
+        <h4>Silicone Grip Lining</h4>
+        <p>Inner silicone layer creates friction against the glove surface, preventing slippage under full load.</p>
+      </div>
+    </li>
+    <li class="material-row reveal delay-2">
+      <span class="material-idx">03</span>
+      <div class="material-info">
+        <h4>Reinforced Stitching</h4>
+        <p>Double-stitched at every stress point for durability through repeated high-intensity use and machine washing.</p>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!-- ============================================================
+     WHAT'S INCLUDED (full width, canvas gone)
+     ============================================================ -->
+<section id="includes" class="full-section" style="background: var(--bg);">
+  <div class="section-head reveal">
+    <span class="overline">In The Box</span>
+    <h2 class="headline" style="font-size:clamp(28px,3vw,44px);">What's Included</h2>
+  </div>
+  <div class="includes-grid">
+
+    <div class="include-card reveal">
+      <div class="include-icon">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <rect x="3" y="6" width="18" height="13" rx="1"/><path d="M3 10h18M8 6V4h8v2"/>
+        </svg>
+      </div>
+      <h4>2 Combat Covers</h4>
+      <p>One complete pair — left and right sleeve. Fits the wrist and velcro base of standard MMA, boxing, and combat gloves.</p>
+    </div>
+
+    <div class="include-card reveal delay-1">
+      <div class="include-icon">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <ellipse cx="12" cy="12" rx="9" ry="9"/><path d="M8.5 8.5c1-2.5 5-2.5 5 0 0 2-2 3-2 5m0 2.5v.5"/>
+        </svg>
+      </div>
+      <h4>Reusable Mesh Wash Bag</h4>
+      <p>Protective mesh laundry bag included. Required for machine washing to maintain shape and longevity.</p>
+    </div>
+
+    <div class="include-card reveal delay-2">
+      <div class="include-icon">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+      <h4>Care Card</h4>
+      <p>Clear printed care instructions to keep your Combat Covers performing at their best through years of training.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     FIT & CARE
+     ============================================================ -->
+<section id="care" class="full-section" style="background: var(--warm);">
+  <div class="section-head reveal">
+    <span class="overline">Instructions</span>
+    <h2 class="headline" style="font-size:clamp(28px,3vw,44px);">Fit &amp; Care</h2>
+  </div>
+  <div class="care-grid">
+    <div class="care-col reveal">
+      <h3>Sizing</h3>
+      <ul class="care-list">
+        <li>Designed to fit the wrist and velcro base of most standard combat gloves</li>
+        <li>One size — stretch spandex accommodates a range of glove widths</li>
+        <li>Compatible with MMA, boxing, and hybrid glove systems</li>
+      </ul>
+    </div>
+    <div class="care-col reveal delay-1">
+      <h3>Care Instructions</h3>
+      <ul class="care-list">
+        <li>Place inside included mesh wash bag before laundering</li>
+        <li>Machine wash cold, gentle cycle only</li>
+        <li>Do not tumble dry — air dry flat or hang</li>
+        <li>Do not bleach or iron silicone or printed areas</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CTA
+     ============================================================ -->
+<section id="cta">
+  <p class="cta-pre reveal">One pair — protective gear that works</p>
+  <h2 class="cta-head reveal delay-1">Train Better.<br>Protect Your Partners.</h2>
+  <p class="cta-sub reveal delay-2">
+    Combat Covers — the simple, effective solution every training room needs.
+    Sold as one piece: 2 sleeves, 1 mesh bag, 1 care card.
+  </p>
+  <a href="#" class="btn btn-light reveal delay-3">Pre-order Now</a>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <div class="ft-brand">
+    <div class="ft-logo">Combat Cover</div>
+    <div class="ft-tag">Where there is preparation,<br>there is no fear.</div>
+  </div>
+  <div class="ft-col">
+    <h5>Product</h5>
+    <ul>
+      <li><a href="#concept">How It Works</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#materials">Materials</a></li>
+      <li><a href="#includes">What's Included</a></li>
+    </ul>
+  </div>
+  <div class="ft-col">
+    <h5>Support</h5>
+    <ul>
+      <li><a href="#care">Fit &amp; Care</a></li>
+      <li><a href="#">Contact</a></li>
+      <li><a href="#">Shipping &amp; Returns</a></li>
+    </ul>
+  </div>
+  <div class="ft-copy">
+    <span>© 2025 Combat Cover. All rights reserved.</span>
+    <span>Made for fighters, by fighters.</span>
+  </div>
+</footer>
+
+<!-- ============================================================
+     SCRIPTS
+     ============================================================ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.162.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three'
+
+// ─── GSAP registration ───────────────────────────────────────
+gsap.registerPlugin(ScrollTrigger)
+
+// ─── Hero load-in ────────────────────────────────────────────
+document.querySelectorAll('.load-in').forEach(el => {
+  setTimeout(() => el.classList.add('go'), 50)
+})
+
+// ─── Navbar scroll ───────────────────────────────────────────
+const navbar = document.getElementById('navbar')
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('solid', window.scrollY > 30)
+}, { passive: true })
+
+// ─── Scroll reveal ───────────────────────────────────────────
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target) }
+  })
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' })
+
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el))
+
+// ─── THREE.JS SETUP ──────────────────────────────────────────
+const viewer   = document.getElementById('product-viewer')
+const canvas   = document.getElementById('three-canvas')
+const isMobile = () => window.innerWidth <= 900
+
+const scene    = new THREE.Scene()
+const camera   = new THREE.PerspectiveCamera(38, 1, 0.1, 100)
+camera.position.set(0, 0, 5.5)
+
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.shadowMap.enabled = true
+renderer.toneMapping = THREE.ACESFilmicToneMapping
+renderer.toneMappingExposure = 1.3
+
+function resizeRenderer() {
+  const w = viewer.offsetWidth
+  const h = viewer.offsetHeight
+  camera.aspect = w / h
+  camera.updateProjectionMatrix()
+  renderer.setSize(w, h)
+}
+resizeRenderer()
+window.addEventListener('resize', resizeRenderer)
+
+// ─── LIGHTING ────────────────────────────────────────────────
+scene.add(new THREE.AmbientLight(0xffffff, 0.5))
+
+const key = new THREE.DirectionalLight(0xffffff, 3.5)
+key.position.set(4, 5, 5)
+key.castShadow = true
+scene.add(key)
+
+const fill = new THREE.DirectionalLight(0xD4C5A9, 1.8)
+fill.position.set(-5, -1, 3)
+scene.add(fill)
+
+const rim = new THREE.DirectionalLight(0x8B7355, 2.2)
+rim.position.set(1, 3, -5)
+scene.add(rim)
+
+const hemi = new THREE.HemisphereLight(0xF7F7F7, 0x8B7355, 0.6)
+scene.add(hemi)
+
+// ─── PRODUCT GEOMETRY ────────────────────────────────────────
+// Main sleeve body — torus represents the ring-shaped sleeve
+const sleeveGeo = new THREE.TorusGeometry(1.15, 0.46, 48, 200)
+const sleeveMat = new THREE.MeshStandardMaterial({
+  color: 0x111111,
+  roughness: 0.86,
+  metalness: 0.04,
+})
+const sleeve = new THREE.Mesh(sleeveGeo, sleeveMat)
+sleeve.castShadow = true
+
+// Accent band — thin ring representing the logo band
+const bandGeo = new THREE.TorusGeometry(1.15, 0.055, 12, 200)
+const bandMat = new THREE.MeshStandardMaterial({
+  color: 0x8B7355,
+  roughness: 0.55,
+  metalness: 0.25,
+})
+const band = new THREE.Mesh(bandGeo, bandMat)
+
+// Inner lining — visible as a subtle darker inner ring
+const liningGeo = new THREE.TorusGeometry(1.15, 0.38, 32, 200)
+const liningMat = new THREE.MeshStandardMaterial({
+  color: 0x282828,
+  roughness: 0.5,
+  metalness: 0.0,
+  side: THREE.BackSide
+})
+const lining = new THREE.Mesh(liningGeo, liningMat)
+
+// Main assembled group
+const group = new THREE.Group()
+group.add(sleeve, band, lining)
+group.rotation.x = 0.28
+scene.add(group)
+
+// ─── EXPLODED VIEW (materials section) ───────────────────────
+const explodedGroup = new THREE.Group()
+
+const eOuterGeo = new THREE.TorusGeometry(1.15, 0.18, 32, 200)
+const eOuter    = new THREE.Mesh(eOuterGeo, new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.88 }))
+
+const eInnerGeo = new THREE.TorusGeometry(1.05, 0.13, 24, 200)
+const eInner    = new THREE.Mesh(eInnerGeo, new THREE.MeshStandardMaterial({ color: 0x2D2D2D, roughness: 0.5 }))
+
+const eStitchGeo = new THREE.TorusGeometry(1.15, 0.028, 8, 200)
+const eStitch    = new THREE.Mesh(eStitchGeo, new THREE.MeshStandardMaterial({ color: 0x8B7355, roughness: 0.65 }))
+
+explodedGroup.add(eOuter, eInner, eStitch)
+explodedGroup.rotation.x = 0.4
+explodedGroup.visible = false
+scene.add(explodedGroup)
+
+// Animated positions for explode
+const ep = { outerY: 0, innerY: 0, stitchY: 0 }
+
+// ─── SCROLL ANIMATION STATE ──────────────────────────────────
+const s = { rotX: 0.28, rotYOffset: 0, posY: 0 }
+
+// concept section — rotate 90°
+ScrollTrigger.create({
+  trigger: '#concept', start: 'top 80%', end: 'bottom 20%', scrub: true,
+  onUpdate(self) {
+    gsap.to(s, { rotYOffset: Math.PI * 0.6 * self.progress, duration: 0.08 })
+  }
+})
+
+// features — full rotation + tilt
+ScrollTrigger.create({
+  trigger: '#features', start: 'top 85%', end: 'bottom 15%', scrub: true,
+  onUpdate(self) {
+    const p = self.progress
+    gsap.to(s, {
+      rotX:      0.28 + p * 0.35,
+      rotYOffset: Math.PI * 0.6 + p * Math.PI * 1.2,
+      duration: 0.08
+    })
+  }
+})
+
+// materials — explode
+ScrollTrigger.create({
+  trigger: '#materials', start: 'top 70%', end: 'center center', scrub: false,
+  onEnter() {
+    group.visible = false
+    explodedGroup.visible = true
+    gsap.to(ep, { outerY: 1.0, innerY: 0, stitchY: -1.0, duration: 0.9, ease: 'power2.out' })
+    gsap.to(s, { rotX: 0.45, duration: 0.9 })
+  },
+  onLeaveBack() {
+    explodedGroup.visible = false
+    group.visible = true
+  }
+})
+
+ScrollTrigger.create({
+  trigger: '#materials', start: 'center center', end: 'bottom 30%', scrub: false,
+  onLeave() {
+    gsap.to(ep, { outerY: 0, innerY: 0, stitchY: 0, duration: 0.5, ease: 'power2.inOut',
+      onComplete() {
+        explodedGroup.visible = false
+        group.visible = true
+      }
+    })
+  }
+})
+
+// product viewer background matches section
+ScrollTrigger.create({
+  trigger: '#concept', start: 'top 50%', end: 'bottom 50%',
+  onEnter()     { viewer.classList.add('dark');    viewer.classList.remove('warm')  },
+  onLeaveBack() { viewer.classList.remove('dark'); viewer.classList.remove('warm')  },
+  onLeave()     { viewer.classList.remove('dark'); viewer.classList.add('warm')     },
+})
+
+// hide canvas for full-width sections
+ScrollTrigger.create({
+  trigger: '#includes', start: 'top 55%',
+  onEnter()     { viewer.classList.add('gone')     },
+  onLeaveBack() { viewer.classList.remove('gone')  }
+})
+
+// ─── RENDER LOOP ─────────────────────────────────────────────
+const clock = new THREE.Clock()
+
+;(function animate() {
+  requestAnimationFrame(animate)
+  const t = clock.getElapsedTime()
+
+  if (group.visible) {
+    group.rotation.x = s.rotX
+    group.rotation.y = s.rotYOffset + t * 0.14
+    group.position.y = Math.sin(t * 0.55) * 0.09
+    group.position.x = Math.sin(t * 0.3) * 0.03
+  }
+
+  if (explodedGroup.visible) {
+    eOuter.position.y  = ep.outerY
+    eInner.position.y  = ep.innerY
+    eStitch.position.y = ep.stitchY
+    explodedGroup.rotation.x = s.rotX
+    explodedGroup.rotation.y = t * 0.09
+    explodedGroup.position.y = Math.sin(t * 0.5) * 0.06
+  }
+
+  renderer.render(scene, camera)
+})()
+
+// ─── MOBILE LAYOUT ADJUSTMENT ────────────────────────────────
+if (isMobile()) {
+  viewer.style.position = 'relative'
+  viewer.style.width    = '100%'
+  viewer.style.height   = '70vw'
+  viewer.style.top      = 'auto'
+  viewer.style.right    = 'auto'
+  resizeRenderer()
+}
+
+window.addEventListener('resize', () => {
+  if (isMobile()) {
+    viewer.style.position = 'relative'
+    viewer.style.width    = '100%'
+    viewer.style.height   = '70vw'
+    viewer.style.top      = 'auto'
+    viewer.style.right    = 'auto'
+  } else {
+    viewer.style.position = 'fixed'
+    viewer.style.width    = '50%'
+    viewer.style.height   = '100vh'
+    viewer.style.top      = '0'
+    viewer.style.right    = '0'
+  }
+  resizeRenderer()
+})
+
+</script>
+</body>
+</html>
