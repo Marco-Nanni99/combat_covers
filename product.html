@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Combat Cover — Product</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================================
+   RESET & TOKENS  (shared with landing page)
+   ============================================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:       #F7F7F7;
+  --text:     #111111;
+  --accent:   #8B7355;
+  --accent-lt:#D4C5A9;
+  --mid:      #686868;
+  --border:   #E0DDD8;
+  --warm:     #F0EDE8;
+  --dark-bg:  #111111;
+  --font:     'Inter', -apple-system, 'Helvetica Neue', sans-serif;
+  --ease:     cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html { background: var(--bg); color: var(--text); font-family: var(--font);
+       -webkit-font-smoothing: antialiased; }
+body { overflow-x: hidden; }
+a    { text-decoration: none; color: inherit; }
+
+/* ============================================================
+   NAVBAR  (matches landing page)
+   ============================================================ */
+nav {
+  position: sticky; top: 0; left: 0; right: 0;
+  z-index: 200;
+  height: 68px; padding: 0 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(247,247,247,0.92);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo { font-size: 12px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; }
+.nav-logo em { font-style: normal; color: var(--accent); }
+.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav-links a { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+               color: var(--mid); transition: color 0.2s; }
+.nav-links a:hover { color: var(--text); }
+.nav-links .cta-link { background: var(--text); color: var(--bg); padding: 9px 22px;
+                        border-radius: 2px; transition: background 0.2s, transform 0.2s; }
+.nav-links .cta-link:hover { background: var(--accent); color: #fff; transform: translateY(-1px); }
+
+.hamburger {
+  display: none; flex-direction: column; justify-content: center; gap: 5px;
+  background: none; border: none; cursor: pointer; padding: 6px 4px; z-index: 201;
+}
+.hamburger span {
+  display: block; width: 22px; height: 2px; background: var(--text); border-radius: 1px;
+  transition: transform 0.35s var(--ease), opacity 0.25s; transform-origin: center;
+}
+.hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.active span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+#mobile-menu {
+  position: fixed; top: 68px; left: 0; right: 0; z-index: 190;
+  background: rgba(247,247,247,0.97);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  max-height: 0; overflow: hidden; transition: max-height 0.4s var(--ease);
+}
+#mobile-menu.open { max-height: 260px; }
+#mobile-menu ul { list-style: none; padding: 16px 24px 28px; display: flex; flex-direction: column; }
+#mobile-menu li { border-bottom: 1px solid var(--border); }
+#mobile-menu li:last-child { border-bottom: none; }
+#mobile-menu a {
+  display: block; padding: 16px 0; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text); transition: color 0.2s;
+}
+#mobile-menu a:hover { color: var(--accent); }
+#mobile-menu .menu-cta {
+  margin-top: 16px; display: inline-block; background: var(--text); color: var(--bg);
+  padding: 14px 32px; border-radius: 2px; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+
+/* ============================================================
+   PRODUCT — two column hero
+   ============================================================ */
+.product {
+  max-width: 1440px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 72px; padding: 64px 48px 88px;
+  align-items: start;
+}
+
+/* ── Gallery (left) ────────────────────────────────────────── */
+.gallery { position: sticky; top: 100px; }
+.gallery-main {
+  position: relative;
+  background: linear-gradient(160deg, #fff 0%, var(--warm) 100%);
+  border: 1px solid var(--border); border-radius: 4px;
+  aspect-ratio: 1 / 1; overflow: hidden;
+}
+#three-canvas { width: 100%; height: 100%; display: block; }
+
+/* photo layer sits over the canvas when a photo thumb is chosen */
+.gallery-photo {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; opacity: 0; visibility: hidden;
+  transition: opacity 0.5s var(--ease);
+}
+.gallery-photo.active { opacity: 1; visibility: visible; }
+
+.gallery-loader {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  pointer-events: none; transition: opacity 0.4s;
+}
+.gallery-loader.hidden { opacity: 0; }
+.loader-ring {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--border); border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.gallery-badge {
+  position: absolute; top: 18px; left: 18px; z-index: 3;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--accent); background: rgba(247,247,247,0.85);
+  padding: 7px 12px; border-radius: 2px; border: 1px solid var(--border);
+  backdrop-filter: blur(6px);
+}
+.drag-hint {
+  position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 3;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--mid); display: flex; align-items: center; gap: 8px;
+  transition: opacity 0.4s; pointer-events: none;
+}
+.drag-hint.hide { opacity: 0; }
+
+.thumbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 16px; }
+.thumb {
+  position: relative; aspect-ratio: 1 / 1; border-radius: 3px; overflow: hidden;
+  border: 1px solid var(--border); cursor: pointer; background: var(--warm);
+  transition: border-color 0.25s, transform 0.25s;
+}
+.thumb:hover { transform: translateY(-2px); }
+.thumb.active { border-color: var(--text); }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb-3d {
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(160deg, #fff 0%, var(--warm) 100%);
+  font-size: 9px; font-weight: 800; letter-spacing: 0.08em; color: var(--accent);
+  text-transform: uppercase; gap: 4px;
+}
+
+/* ── Info (right) ──────────────────────────────────────────── */
+.info { padding-top: 8px; }
+.eyebrow {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--accent); display: block; margin-bottom: 18px;
+}
+.title {
+  font-size: clamp(40px, 5vw, 68px); font-weight: 900; line-height: 0.95;
+  letter-spacing: -0.04em; margin-bottom: 18px;
+}
+.subtitle {
+  font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 22px;
+}
+.lede { font-size: 16px; line-height: 1.65; color: var(--mid); max-width: 440px; margin-bottom: 32px; }
+
+.price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 34px; }
+.price { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
+.price-cur { font-size: 14px; font-weight: 600; color: var(--mid); }
+
+.divider { height: 1px; background: var(--border); margin: 0 0 30px; }
+
+.field-label {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--mid); margin-bottom: 14px;
+}
+.size-guide { color: var(--accent); display: inline-flex; align-items: center; gap: 6px;
+              cursor: pointer; transition: gap 0.2s; }
+.size-guide:hover { gap: 9px; }
+
+.sizes { display: flex; gap: 10px; margin-bottom: 30px; }
+.size-btn {
+  width: 58px; height: 50px; border: 1px solid var(--border); background: #fff;
+  border-radius: 3px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text);
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.15s;
+}
+.size-btn:hover { border-color: var(--text); }
+.size-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+.buy-row { display: flex; gap: 14px; margin-bottom: 18px; }
+.qty {
+  display: flex; align-items: center; border: 1px solid var(--border); border-radius: 3px;
+  background: #fff; height: 56px; overflow: hidden; flex-shrink: 0;
+}
+.qty button {
+  width: 46px; height: 100%; border: none; background: none; cursor: pointer;
+  font-size: 18px; color: var(--mid); transition: color 0.2s, background 0.2s;
+}
+.qty button:hover { color: var(--text); background: var(--warm); }
+.qty input {
+  width: 44px; height: 100%; border: none; text-align: center; background: none;
+  font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--text);
+  -moz-appearance: textfield;
+}
+.qty input::-webkit-outer-spin-button,
+.qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; border-radius: 3px;
+  transition: background 0.2s, color 0.2s, transform 0.2s, border-color 0.2s;
+}
+.btn-cart { flex: 1; height: 56px; background: var(--text); color: var(--bg); }
+.btn-cart:hover { background: var(--accent); transform: translateY(-2px); }
+.btn-cart.added { background: var(--accent); }
+.btn-specs {
+  width: 100%; height: 54px; background: transparent; color: var(--text);
+  border: 1px solid var(--border); margin-bottom: 26px;
+}
+.btn-specs:hover { border-color: var(--text); transform: translateY(-2px); }
+
+.assurance {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: var(--mid);
+}
+.assurance svg { color: var(--accent); flex-shrink: 0; }
+
+/* ============================================================
+   FEATURE STRIP (4 cols with icons)
+   ============================================================ */
+.feature-strip {
+  border-top: 1px solid var(--border);
+  max-width: 1440px; margin: 0 auto; padding: 0 48px;
+}
+.feature-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+.feat {
+  padding: 48px 36px 48px 0; border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.feat:last-child { border-right: none; }
+.feat + .feat { padding-left: 36px; }
+.feat-icon { color: var(--accent); }
+.feat h4 { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.25; }
+.feat p { font-size: 13.5px; line-height: 1.6; color: var(--mid); }
+
+/* ============================================================
+   SPEC STRIP (Material / Fit / Care / Shipping)
+   ============================================================ */
+.spec-strip {
+  border-top: 1px solid var(--border);
+  max-width: 1440px; margin: 0 auto; padding: 0 48px;
+}
+.spec-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+.spec {
+  padding: 48px 36px 56px 0; border-right: 1px solid var(--border);
+  display: flex; gap: 18px; align-items: flex-start;
+}
+.spec:last-child { border-right: none; }
+.spec + .spec { padding-left: 36px; }
+.spec-icon { color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+.spec h5 {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text); margin-bottom: 10px;
+}
+.spec p { font-size: 13.5px; line-height: 1.7; color: var(--mid); }
+
+/* ============================================================
+   TRUST BAR
+   ============================================================ */
+.trust {
+  border-top: 1px solid var(--border); background: var(--warm);
+  display: flex; align-items: center; justify-content: center; gap: 40px;
+  padding: 26px 24px; flex-wrap: wrap;
+}
+.trust span {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--mid);
+}
+.trust svg { color: var(--accent); }
+.trust .dot { color: var(--border); font-weight: 400; }
+
+/* ============================================================
+   FOOTER  (matches landing page)
+   ============================================================ */
+footer {
+  background: #080808; padding: 72px 10%;
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 48px;
+}
+.ft-brand .ft-logo { font-size: 12px; font-weight: 800; letter-spacing: 0.18em;
+                      text-transform: uppercase; color: #fff; margin-bottom: 12px; }
+.ft-brand .ft-tag  { font-size: 11px; color: rgba(255,255,255,0.28);
+                      letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.6; }
+.ft-col h5 { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+              color: rgba(255,255,255,0.3); margin-bottom: 20px; }
+.ft-col ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.ft-col a  { font-size: 13px; color: rgba(255,255,255,0.55); transition: color 0.2s; }
+.ft-col a:hover { color: #fff; }
+.ft-copy {
+  grid-column: 1 / -1; border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 32px; display: flex; justify-content: space-between;
+  font-size: 11px; color: rgba(255,255,255,0.22);
+}
+
+/* ============================================================
+   LOAD-IN
+   ============================================================ */
+.load-in { opacity: 0; transform: translateY(16px); }
+.load-in.go { animation: fadeUp 0.8s var(--ease) forwards; }
+@keyframes fadeUp { to { opacity: 1; transform: none; } }
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+@media (max-width: 980px) {
+  nav { padding: 0 24px; }
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+
+  .product {
+    grid-template-columns: 1fr; gap: 40px; padding: 32px 24px 64px;
+  }
+  .gallery { position: static; top: auto; }
+
+  .feature-strip, .spec-strip { padding: 0 24px; }
+  .feature-grid { grid-template-columns: 1fr 1fr; }
+  .feat { padding: 36px 24px 36px 0; }
+  .feat:nth-child(2) { border-right: none; }
+  .feat:nth-child(1), .feat:nth-child(2) { border-bottom: 1px solid var(--border); }
+  .feat + .feat { padding-left: 0; }
+  .feat:nth-child(even) { padding-left: 24px; border-right: none; }
+  .feat:nth-child(odd)  { border-right: 1px solid var(--border); }
+
+  .spec-grid { grid-template-columns: 1fr; }
+  .spec { border-right: none; border-bottom: 1px solid var(--border);
+          padding: 32px 0; }
+  .spec + .spec { padding-left: 0; }
+  .spec:last-child { border-bottom: none; }
+
+  .trust { gap: 18px; }
+  .trust .dot { display: none; }
+
+  footer { grid-template-columns: 1fr; padding: 56px 24px; }
+}
+
+@media (max-width: 460px) {
+  .thumbs { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .buy-row { flex-wrap: wrap; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav>
+  <a href="index.html" class="nav-logo">Combat <em>Cover</em></a>
+  <ul class="nav-links">
+    <li><a href="index.html#features">Product</a></li>
+    <li><a href="#specs">Specs</a></li>
+    <li><a href="#buy" class="cta-link">Pre-order</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div id="mobile-menu">
+  <ul>
+    <li><a href="index.html#features" class="menu-link">Product</a></li>
+    <li><a href="#specs" class="menu-link">Specs</a></li>
+    <li><a href="index.html" class="menu-link">Home</a></li>
+  </ul>
+  <a href="#buy" class="menu-cta menu-link">Pre-order Now</a>
+</div>
+
+<!-- ============================================================
+     PRODUCT
+     ============================================================ -->
+<section class="product" id="buy">
+
+  <!-- ── Gallery ── -->
+  <div class="gallery load-in" style="animation-delay:.05s">
+    <div class="gallery-main">
+      <span class="gallery-badge">360° View</span>
+      <canvas id="three-canvas"></canvas>
+
+      <img class="gallery-photo" data-photo="0" src="images/landing_page/sec01/sec1.jpg" alt="Combat Cover worn during training">
+      <img class="gallery-photo" data-photo="1" src="images/landing_page/sec02/sec2.jpg" alt="Combat Cover on a boxing glove">
+      <img class="gallery-photo" data-photo="2" src="images/landing_page/sec03/sec3.jpg" alt="Combat Cover close fit on the wrist">
+      <img class="gallery-photo" data-photo="3" src="images/landing_page/sec04/sec4.jpg" alt="Combat Cover worn by athletes">
+
+      <div class="gallery-loader" id="gallery-loader"><span class="loader-ring"></span></div>
+      <div class="drag-hint" id="drag-hint">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+        Drag to rotate
+      </div>
+    </div>
+
+    <div class="thumbs">
+      <button class="thumb active" data-view="3d" aria-label="3D view">
+        <span class="thumb-3d">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          3D
+        </span>
+      </button>
+      <button class="thumb" data-view="0" aria-label="Photo 1"><img src="images/landing_page/sec01/sec1.jpg" alt=""></button>
+      <button class="thumb" data-view="1" aria-label="Photo 2"><img src="images/landing_page/sec02/sec2.jpg" alt=""></button>
+      <button class="thumb" data-view="2" aria-label="Photo 3"><img src="images/landing_page/sec03/sec3.jpg" alt=""></button>
+      <button class="thumb" data-view="3" aria-label="Photo 4"><img src="images/landing_page/sec04/sec4.jpg" alt=""></button>
+    </div>
+  </div>
+
+  <!-- ── Info ── -->
+  <div class="info load-in" style="animation-delay:.18s">
+    <span class="eyebrow">01 — Safety</span>
+    <h1 class="title">Combat<br>Cover</h1>
+    <p class="subtitle">Train Hard. Protect Smarter.</p>
+    <p class="lede">
+      Precision-fit spandex sleeve that eliminates velcro scratches and
+      stabilizes your gloves during high-intensity training.
+    </p>
+
+    <div class="price-row">
+      <span class="price">$29.00</span>
+      <span class="price-cur">USD</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="field-label">
+      <span>Size</span>
+      <span class="size-guide">Size Guide
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M5 12h14M13 6l6 6-6 6"/>
+        </svg>
+      </span>
+    </div>
+    <div class="sizes" id="sizes">
+      <button class="size-btn" data-size="S">S</button>
+      <button class="size-btn active" data-size="M">M</button>
+      <button class="size-btn" data-size="L">L</button>
+    </div>
+
+    <div class="field-label"><span>Quantity</span></div>
+    <div class="buy-row">
+      <div class="qty">
+        <button id="qty-minus" aria-label="Decrease quantity">−</button>
+        <input id="qty-input" type="number" value="1" min="1" max="99" inputmode="numeric">
+        <button id="qty-plus" aria-label="Increase quantity">+</button>
+      </div>
+      <button class="btn btn-cart" id="add-cart">Add to Cart</button>
+    </div>
+
+    <button class="btn btn-specs" id="view-specs">View Specs</button>
+
+    <div class="assurance">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <circle cx="12" cy="12" r="9"/><path d="M8.5 12l2.5 2.5 4.5-5"/>
+      </svg>
+      One product. One purpose. Simplicity by design.
+    </div>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     FEATURE STRIP
+     ============================================================ -->
+<div class="feature-strip">
+  <div class="feature-grid">
+    <div class="feat">
+      <div class="feat-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/>
+        </svg>
+      </div>
+      <h4>No More Velcro Scratches</h4>
+      <p>A seamless outer layer prevents exposed hook surfaces from catching skin or fabric.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M4 9c4-3 12-3 16 0M4 13c4-3 12-3 16 0M4 17c4-3 12-3 16 0"/>
+        </svg>
+      </div>
+      <h4>Stabilized Fit</h4>
+      <p>Adds just the right compression to keep your wraps and gloves locked in.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M3 21c6-1 10-5 16-16-7 2-12 5-14 9-1 2-2 5-2 7z"/><path d="M9 15c2-2 4-3 7-4"/>
+        </svg>
+      </div>
+      <h4>Lightweight Compression</h4>
+      <p>Breathable, low-profile spandex moves with you — never slows you down.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/>
+        </svg>
+      </div>
+      <h4>Built for Sparring, Grappling &amp; Pads</h4>
+      <p>Engineered for all combat sports and training intensities.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SPEC STRIP
+     ============================================================ -->
+<div class="spec-strip" id="specs">
+  <div class="spec-grid">
+    <div class="spec">
+      <div class="spec-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5M3 16.5l9 5 9-5"/>
+        </svg>
+      </div>
+      <div>
+        <h5>Material</h5>
+        <p>Premium spandex blend with seamless protective outer layer.<br>87% Polyester / 13% Spandex.</p>
+      </div>
+    </div>
+    <div class="spec">
+      <div class="spec-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4"/><path d="M9 12l2 2 4-4"/>
+        </svg>
+      </div>
+      <div>
+        <h5>Fit</h5>
+        <p>Compression fit. Sizes S / M / L. Designed to wear over hand wraps and under gloves.</p>
+      </div>
+    </div>
+    <div class="spec">
+      <div class="spec-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M4 10c3-3 13-3 16 0l-1.5 8.5a2 2 0 01-2 1.5H7.5a2 2 0 01-2-1.5L4 10z"/><path d="M8 8c0-2 8-2 8 0"/>
+        </svg>
+      </div>
+      <div>
+        <h5>Care</h5>
+        <p>Machine wash cold with like colors. Hang dry. Do not bleach. Do not iron.</p>
+      </div>
+    </div>
+    <div class="spec">
+      <div class="spec-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M2 7h11v9H2zM13 10h4l3 3v3h-7z"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/>
+        </svg>
+      </div>
+      <div>
+        <h5>Shipping</h5>
+        <p>Free shipping on all pre-orders. Ships in 2–3 weeks. 60-day satisfaction guarantee.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     TRUST BAR
+     ============================================================ -->
+<div class="trust">
+  <span>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 018 0v3"/>
+    </svg>
+    Secure Checkout
+  </span>
+  <span class="dot">•</span>
+  <span>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/>
+    </svg>
+    60-Day Guarantee
+  </span>
+  <span class="dot">•</span>
+  <span>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M3 12a9 9 0 0115-6.7L21 8M21 3v5h-5"/><path d="M21 12a9 9 0 01-15 6.7L3 16M3 21v-5h5"/>
+    </svg>
+    Hassle-Free Returns
+  </span>
+</div>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <div class="ft-brand">
+    <div class="ft-logo">Combat Cover</div>
+    <div class="ft-tag">Where there is preparation,<br>there is no fear.</div>
+  </div>
+  <div class="ft-col">
+    <h5>Product</h5>
+    <ul>
+      <li><a href="index.html#features">Features</a></li>
+      <li><a href="index.html#materials">Materials</a></li>
+      <li><a href="#specs">Specs</a></li>
+    </ul>
+  </div>
+  <div class="ft-col">
+    <h5>Support</h5>
+    <ul>
+      <li><a href="index.html#care">Fit &amp; Care</a></li>
+      <li><a href="#">Contact</a></li>
+      <li><a href="#">Shipping &amp; Returns</a></li>
+    </ul>
+  </div>
+  <div class="ft-copy">
+    <span>© 2025 Combat Cover. All rights reserved.</span>
+    <span>Made for fighters, by fighters.</span>
+  </div>
+</footer>
+
+<!-- ============================================================
+     SCRIPTS
+     ============================================================ -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.162.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+
+/* ─── Load-in ───────────────────────────────────────────────── */
+document.querySelectorAll('.load-in').forEach(el => {
+  setTimeout(() => el.classList.add('go'), 60)
+})
+
+/* ─── Hamburger ─────────────────────────────────────────────── */
+const hamburger  = document.getElementById('hamburger')
+const mobileMenu = document.getElementById('mobile-menu')
+hamburger.addEventListener('click', () => {
+  hamburger.classList.toggle('active')
+  mobileMenu.classList.toggle('open')
+})
+mobileMenu.querySelectorAll('.menu-link').forEach(link => {
+  link.addEventListener('click', () => {
+    hamburger.classList.remove('active')
+    mobileMenu.classList.remove('open')
+  })
+})
+
+/* ─── Size selector ─────────────────────────────────────────── */
+document.querySelectorAll('.size-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+  })
+})
+
+/* ─── Quantity ──────────────────────────────────────────────── */
+const qtyInput = document.getElementById('qty-input')
+const clampQty = v => Math.max(1, Math.min(99, v || 1))
+document.getElementById('qty-minus').addEventListener('click', () => {
+  qtyInput.value = clampQty(parseInt(qtyInput.value) - 1)
+})
+document.getElementById('qty-plus').addEventListener('click', () => {
+  qtyInput.value = clampQty(parseInt(qtyInput.value) + 1)
+})
+qtyInput.addEventListener('change', () => { qtyInput.value = clampQty(parseInt(qtyInput.value)) })
+
+/* ─── Add to cart (demo feedback) ───────────────────────────── */
+const addBtn = document.getElementById('add-cart')
+addBtn.addEventListener('click', () => {
+  const size = document.querySelector('.size-btn.active').dataset.size
+  addBtn.textContent = `Added · ${size} ×${qtyInput.value}`
+  addBtn.classList.add('added')
+  setTimeout(() => { addBtn.textContent = 'Add to Cart'; addBtn.classList.remove('added') }, 1800)
+})
+
+/* ─── View specs scroll ─────────────────────────────────────── */
+document.getElementById('view-specs').addEventListener('click', () => {
+  document.getElementById('specs').scrollIntoView({ behavior: 'smooth', block: 'start' })
+})
+
+/* ─── Gallery view switching ────────────────────────────────── */
+const photos   = [...document.querySelectorAll('.gallery-photo')]
+const thumbs   = [...document.querySelectorAll('.thumb')]
+const dragHint = document.getElementById('drag-hint')
+let autoRotate = true
+
+function showView(view) {
+  thumbs.forEach(t => t.classList.toggle('active', t.dataset.view === view))
+  if (view === '3d') {
+    photos.forEach(p => p.classList.remove('active'))
+    autoRotate = true
+    dragHint.classList.remove('hide')
+  } else {
+    photos.forEach(p => p.classList.toggle('active', p.dataset.photo === view))
+    autoRotate = false
+    dragHint.classList.add('hide')
+  }
+}
+thumbs.forEach(t => t.addEventListener('click', () => showView(t.dataset.view)))
+
+/* ─── THREE.JS — contained product viewer ───────────────────── */
+const canvas = document.getElementById('three-canvas')
+const wrap   = canvas.parentElement
+const sizeOf = () => Math.min(wrap.clientWidth, wrap.clientHeight)
+
+const scene  = new THREE.Scene()
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100)
+camera.position.set(0, 0, 7)
+
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.toneMapping = THREE.ACESFilmicToneMapping
+renderer.toneMappingExposure = 1.25
+
+function resize() {
+  const w = wrap.clientWidth, h = wrap.clientHeight
+  camera.aspect = w / h
+  camera.updateProjectionMatrix()
+  renderer.setSize(w, h, false)
+}
+resize()
+window.addEventListener('resize', resize)
+
+/* Lighting — same warm key/fill/rim as the landing hero */
+scene.add(new THREE.AmbientLight(0xffffff, 0.6))
+const key = new THREE.DirectionalLight(0xffffff, 3.5); key.position.set(5, 6, 6); scene.add(key)
+const fill = new THREE.DirectionalLight(0xD4C5A9, 2.0); fill.position.set(-5, -1, 4); scene.add(fill)
+const rim = new THREE.DirectionalLight(0x8B7355, 1.8); rim.position.set(0, 4, -6); scene.add(rim)
+scene.add(new THREE.HemisphereLight(0xF7F7F7, 0x8B7355, 0.5))
+
+const group = new THREE.Group()
+scene.add(group)
+
+const loader = new GLTFLoader()
+loader.load('3d_model/3dmodel.glb', gltf => {
+  const src = gltf.scene
+  const box = new THREE.Box3().setFromObject(src)
+  const size = box.getSize(new THREE.Vector3())
+  const center = box.getCenter(new THREE.Vector3())
+  const maxDim = Math.max(size.x, size.y, size.z)
+  src.position.sub(center)
+  src.scale.setScalar(3.0 / maxDim)
+  group.add(src)
+  group.rotation.set(-0.15, 0.5, 0)
+  document.getElementById('gallery-loader').classList.add('hidden')
+}, undefined, () => {
+  // If the model fails to load, fall back to the first photo
+  document.getElementById('gallery-loader').classList.add('hidden')
+  showView('0')
+})
+
+/* Drag-to-rotate */
+let dragging = false, lastX = 0, lastY = 0
+let targetRotY = 0.5, targetRotX = -0.15
+
+canvas.addEventListener('pointerdown', e => {
+  dragging = true; lastX = e.clientX; lastY = e.clientY
+  autoRotate = false; dragHint.classList.add('hide')
+  canvas.setPointerCapture(e.pointerId)
+})
+canvas.addEventListener('pointermove', e => {
+  if (!dragging) return
+  targetRotY += (e.clientX - lastX) * 0.01
+  targetRotX += (e.clientY - lastY) * 0.008
+  targetRotX = Math.max(-0.8, Math.min(0.8, targetRotX))
+  lastX = e.clientX; lastY = e.clientY
+})
+canvas.addEventListener('pointerup',     () => { dragging = false })
+canvas.addEventListener('pointercancel', () => { dragging = false })
+canvas.style.touchAction = 'pan-y'
+canvas.style.cursor = 'grab'
+
+/* Render loop */
+const clock = new THREE.Clock()
+;(function animate() {
+  requestAnimationFrame(animate)
+  const dt = clock.getDelta()
+  if (autoRotate) targetRotY += dt * 0.5
+  group.rotation.y += (targetRotY - group.rotation.y) * 0.1
+  group.rotation.x += (targetRotX - group.rotation.x) * 0.1
+  group.position.y = Math.sin(clock.getElapsedTime() * 0.8) * 0.05
+  renderer.render(scene, camera)
+})()
+</script>
+</body>
+</html>
