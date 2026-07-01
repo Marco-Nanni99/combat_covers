@@ -28,12 +28,12 @@
 }
 
 html { background: var(--bg); color: var(--text); font-family: var(--font);
-       -webkit-font-smoothing: antialiased; }
+       -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
 body { overflow-x: hidden; }
 a    { text-decoration: none; color: inherit; }
 
 /* ============================================================
-   FULL-SCREEN 3D CANVAS (fixed, only during hero)
+   FLOATING BANDS LAYER (fixed, only during hero)
    ============================================================ */
 #product-viewer {
   position: fixed;
@@ -43,21 +43,38 @@ a    { text-decoration: none; color: inherit; }
   transition: opacity 0.8s var(--ease);
 }
 #product-viewer.gone { opacity: 0; }
-#three-canvas { width: 100%; height: 100%; display: block; }
 
-#loader {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  pointer-events: none;
-  transition: opacity 0.4s;
+.band-layer { position: absolute; inset: 0; }
+
+/* Outer element — JS drives scroll parallax on its transform */
+.band {
+  position: absolute;
+  left: var(--x); top: var(--y);
+  width: var(--size);
+  will-change: transform;
 }
-#loader.hidden { opacity: 0; }
-.loader-ring {
-  width: 28px; height: 28px; border-radius: 50%;
-  border: 2px solid var(--border); border-top-color: var(--accent);
-  animation: spin 0.8s linear infinite;
+/* Middle element — one-time drop-from-the-sky entrance */
+.band-drop {
+  animation: dropIn 1.7s var(--ease) backwards;
+  animation-delay: var(--delay);
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+/* Image — perpetual float bob + its own resting rotation */
+.band-img {
+  width: 100%; height: auto; display: block;
+  transform: rotate(var(--rot));
+  animation: floatBob var(--float) ease-in-out infinite alternate;
+  animation-delay: var(--delay);
+  filter: drop-shadow(0 26px 34px rgba(0,0,0,0.28));
+}
+@keyframes dropIn {
+  0%   { transform: translateY(-118vh); opacity: 0; }
+  55%  { opacity: 1; }
+  100% { transform: translateY(0);      opacity: 1; }
+}
+@keyframes floatBob {
+  from { transform: translateY(0)     rotate(var(--rot)); }
+  to   { transform: translateY(-15px) rotate(var(--rot)); }
+}
 
 /* ============================================================
    NAVBAR
@@ -118,7 +135,7 @@ nav.solid {
   display: block;
 }
 .hero-title .t-solid   { color: var(--text); }
-.hero-title .t-outline { color: transparent; -webkit-text-stroke: 2px var(--text); }
+.hero-title .t-outline { color: var(--bg); -webkit-text-stroke: 2px var(--text); paint-order: stroke fill; }
 
 /* Bottom content block */
 .hero-content .overline {
@@ -237,52 +254,167 @@ nav.solid {
 .full-section { padding: 120px 10%; }
 
 /* ============================================================
-   MATERIALS
+   ENGINEERING — dark, annotated band photo
    ============================================================ */
-#materials { background: var(--warm); padding: 120px 10%; }
+#materials { background: #101010; padding: 120px 10%; color: #fff; }
 
-.materials-inner {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
+.eng-head { text-align: center; max-width: 620px; margin: 0 auto 56px; }
+.eng-head .headline  { color: #fff; }
+.eng-head .body-text { color: rgba(255,255,255,0.55); max-width: none; }
+
+/* Annotated photo frame — fixed ratio so callout dots stay glued to the band */
+.eng-figure {
+  position: relative;
+  max-width: 940px; margin: 0 auto;
+  aspect-ratio: 3 / 2;
+  border-radius: 6px; overflow: hidden;
 }
-.material-list { list-style: none; margin-top: 0; }
-.material-row {
-  display: flex; align-items: flex-start; gap: 28px;
-  padding: 28px 0; border-bottom: 1px solid var(--border);
+.eng-figure img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
+  display: block;
 }
-.material-row:first-child { border-top: 1px solid var(--border); }
-.material-idx { font-size: 10px; font-weight: 800; color: var(--accent);
-                letter-spacing: 0.12em; min-width: 22px; padding-top: 4px; }
-.material-info h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-.material-info p  { font-size: 14px; color: var(--mid); line-height: 1.55; }
+
+/* Connector lines drawn in a 0–100 coordinate space = percentages of the frame */
+.eng-lines { position: absolute; inset: 0; width: 100%; height: 100%;
+             pointer-events: none; z-index: 2; }
+.eng-lines line { stroke: rgba(212,197,169,0.55); stroke-width: 1; }
+
+/* Pulsing dots pinned to the wristband (positioned by %) */
+.eng-dot {
+  position: absolute; z-index: 3;
+  width: 10px; height: 10px; margin: -5px 0 0 -5px;
+  border-radius: 50%; background: var(--accent-lt);
+  box-shadow: 0 0 0 4px rgba(212,197,169,0.16);
+}
+.eng-dot::after {
+  content: ''; position: absolute; inset: -4px;
+  border-radius: 50%; border: 1px solid rgba(212,197,169,0.5);
+  animation: engPulse 2.4s ease-out infinite;
+}
+@keyframes engPulse {
+  0%   { transform: scale(1);   opacity: 0.8; }
+  100% { transform: scale(2.6); opacity: 0;   }
+}
+
+/* Mobile callout labels — hidden on desktop, shown on mobile next to each dot */
+.eng-dot-label {
+  display: none;
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  white-space: nowrap;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(212,197,169,0.95);
+  text-decoration: underline; text-underline-offset: 3px;
+  line-height: 1; z-index: 4;
+}
+.eng-dot-label--right { left: 18px; }
+.eng-dot-label--left  { right: 18px; text-align: right; }
+
+/* Material thumbnails row */
+.eng-materials {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+  max-width: 940px; margin: 32px auto 0;
+}
+.eng-thumb {
+  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  border-radius: 6px; display: block; margin-bottom: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.eng-card .num { font-size: 10px; font-weight: 800; letter-spacing: 0.18em;
+                 color: var(--accent-lt); margin-bottom: 8px; }
+.eng-card h4  { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.eng-card p   { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.5); }
 
 /* ============================================================
    INCLUDES
    ============================================================ */
-.includes-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 2px; background: var(--border); margin-top: 64px;
+.includes-layout {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+  align-items: start; margin-top: 64px;
 }
-.include-card {
-  background: var(--bg); padding: 52px 44px;
-  display: flex; flex-direction: column; gap: 20px;
+.includes-photos {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
 }
-.include-icon {
-  width: 44px; height: 44px; border-radius: 50%;
-  border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center; color: var(--accent);
+.includes-photos .photo-main {
+  grid-column: 1 / -1;
+  width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; border-radius: 4px;
 }
-.include-card h4 { font-size: 16px; font-weight: 700; }
-.include-card p  { font-size: 14px; line-height: 1.6; color: var(--mid); }
+.includes-photos .photo-detail {
+  width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; border-radius: 4px;
+}
+.includes-list {
+  display: flex; flex-direction: column; justify-content: space-between; gap: 0;
+  align-self: stretch;
+}
+.include-item {
+  padding: 32px 0; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 24px; flex: 1;
+}
+.include-item:first-child { border-top: 1px solid var(--border); }
+.include-num {
+  font-size: 10px; font-weight: 800; color: var(--accent);
+  letter-spacing: 0.12em; min-width: 22px; padding-top: 4px;
+}
+.include-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.include-item p  { font-size: 14px; line-height: 1.6; color: var(--mid); }
+
+/* ============================================================
+   LIFESTYLE BAND
+   ============================================================ */
+#lifestyle {
+  position: relative; overflow: hidden;
+  height: clamp(420px, 60vw, 720px);
+}
+#lifestyle img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center 30%;
+  display: block;
+}
+#lifestyle .lifestyle-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
+  display: flex; align-items: center; padding: 0 10%;
+}
+#lifestyle .lifestyle-text {
+  color: #fff; max-width: 480px;
+}
+#lifestyle .lifestyle-text .overline {
+  color: rgba(255,255,255,0.6); margin-bottom: 20px; display: block;
+}
+#lifestyle .lifestyle-text p {
+  font-size: clamp(28px, 3.5vw, 52px);
+  font-weight: 800; line-height: 1.1; letter-spacing: -0.03em;
+}
+.lifestyle-credits {
+  display: flex; flex-direction: column; gap: 4px; margin-top: 28px;
+}
+.lifestyle-credits span {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: rgba(255,255,255,0.5);
+}
 
 /* ============================================================
    CARE
    ============================================================ */
 .care-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 64px; }
 .care-col h3 { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 24px; }
-.care-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
-.care-list li { font-size: 15px; color: var(--mid); line-height: 1.55;
-                padding-left: 22px; position: relative; }
-.care-list li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
+.care-list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.care-list li {
+  display: flex; align-items: center; gap: 16px;
+  font-size: 15px; color: var(--mid); line-height: 1.55;
+}
+.care-icon {
+  flex-shrink: 0;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.care-icon img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.1); }
 
 /* ============================================================
    CTA
@@ -375,7 +507,7 @@ footer {
   overflow: hidden;
   transition: max-height 0.4s var(--ease);
 }
-#mobile-menu.open { max-height: 260px; }
+#mobile-menu.open { max-height: 380px; }
 #mobile-menu ul {
   list-style: none;
   padding: 16px 24px 28px;
@@ -404,6 +536,43 @@ footer {
 }
 
 /* ============================================================
+   BENEFITS 4-COLUMN GRID
+   ============================================================ */
+#features {
+  padding: 120px 10%;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+.benefits-intro { margin-bottom: 64px; }
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px;
+}
+
+.benefit-card { display: flex; flex-direction: column; }
+
+.benefit-photo { overflow: hidden; margin-bottom: 24px; }
+.benefit-photo img {
+  width: 100%; aspect-ratio: 3/4;
+  object-fit: cover; display: block;
+  transition: transform 0.7s var(--ease);
+}
+.benefit-card:hover .benefit-photo img { transform: scale(1.04); }
+
+.benefit-num {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+}
+.benefit-title {
+  font-size: clamp(17px, 1.5vw, 22px); font-weight: 800;
+  line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 12px;
+}
+.benefit-body { font-size: 14px; line-height: 1.65; color: var(--mid); }
+
+/* ============================================================
    MOBILE
    ============================================================ */
 @media (max-width: 900px) {
@@ -412,24 +581,18 @@ footer {
   .nav-links  { display: none; }
   .hamburger  { display: flex; }
 
-  /* Hero: canvas sits on top, text flows below */
+  /* Hero: bands float behind, text flows over */
   #hero { height: auto; max-height: none; }
 
-  #product-viewer {
-    position: absolute !important;
-    top: 0; left: 0;
-    width: 100% !important;
-    height: 55vw !important;
-    min-height: 200px;
-    max-height: 44vh;
-  }
+  /* Smaller bands + fewer of them so they don't crowd the text */
+  .band { width: calc(var(--size) * 0.5); }
+  .band:nth-child(n+6) { display: none; }
 
   .hero-left {
     width: 100%;
     height: auto;
     min-height: 0;
-    padding: 0 24px clamp(40px, 5vh, 64px);
-    padding-top: calc(55vw + 20px); /* push below canvas */
+    padding: 120px 24px clamp(40px, 5vh, 64px);
     justify-content: flex-start;
     overflow: visible;
   }
@@ -437,18 +600,59 @@ footer {
   .hero-title span { font-size: clamp(42px, 14vw, 88px); }
   .scroll-hint { display: none; }
 
-  .feature-section        { grid-template-columns: 1fr; min-height: auto; }
-  .feature-section.reverse .feature-visual { order: 0; }
-  .feature-text           { padding: 56px 24px; }
-  .feature-visual         { min-height: 60vw; }
+  #features { padding: 72px 24px; }
+  .benefits-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
 
-  .materials-inner        { grid-template-columns: 1fr; gap: 40px; }
-  .includes-grid          { grid-template-columns: 1fr; }
+  .eng-materials          { grid-template-columns: 1fr; gap: 32px; }
+  .eng-lines              { display: none; }
+  .eng-dot-label          { display: block; }
+  .eng-figure             { overflow: visible; }
+  .eng-figure img         { border-radius: 6px; }
+  .includes-layout        { grid-template-columns: 1fr; gap: 40px; }
+  .includes-photos        { grid-template-columns: 1fr 1fr; }
   .care-grid              { grid-template-columns: 1fr; gap: 40px; }
   footer                  { grid-template-columns: 1fr; padding: 56px 24px; }
   .full-section           { padding: 72px 24px; }
   #materials              { padding: 72px 24px; }
   #cta                    { padding: 88px 24px; }
+}
+
+@media (max-width: 500px) {
+  .benefits-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   CONTACT / EMAIL SIGNUP
+   ============================================================ */
+#contact {
+  background: var(--warm);
+  padding: 120px 10%;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+.contact-inner { max-width: 560px; margin: 0 auto; }
+.contact-inner .body-text { max-width: none; margin-bottom: 0; }
+.contact-row {
+  display: flex; gap: 12px;
+  max-width: 460px; margin: 40px auto 0;
+}
+.contact-input {
+  flex: 1; height: 52px;
+  border: 1px solid var(--border); border-radius: 2px;
+  padding: 0 20px; font-size: 15px; font-family: var(--font);
+  background: #fff; color: var(--text); outline: none;
+  transition: border-color 0.2s;
+}
+.contact-input:focus { border-color: var(--text); }
+.contact-input::placeholder { color: var(--mid); }
+.contact-thanks {
+  margin-top: 16px; font-size: 14px;
+  color: var(--accent); font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  #contact { padding: 72px 24px; }
+  .contact-row { flex-direction: column; }
 }
 
 </style>
@@ -459,8 +663,32 @@ footer {
      FULL-SCREEN PRODUCT CANVAS
      ============================================================ -->
 <div id="product-viewer">
-  <canvas id="three-canvas"></canvas>
-  <div id="loader"><span class="loader-ring"></span></div>
+  <div class="band-layer">
+    <div class="band" style="--x:52%; --y:8%;  --size:384px; --rot:-22deg; --delay:.30s; --float:3.2s;" data-speed="1.5">
+      <div class="band-drop"><img class="band-img" src="images/landing_page/hero/combatcover_band.svg" alt=""></div>
+    </div>
+    <div class="band" style="--x:79%; --y:24%; --size:248px; --rot:19deg;  --delay:.55s; --float:3.8s;" data-speed="1.0">
+      <div class="band-drop"><img class="band-img" src="images/landing_page/hero/combatcover_band.svg" alt=""></div>
+    </div>
+    <div class="band" style="--x:80%; --y:60%; --size:297px; --rot:26deg;  --delay:.44s; --float:3.5s;" data-speed="1.2">
+      <div class="band-drop"><img class="band-img" src="images/landing_page/hero/combatcover_band.svg" alt=""></div>
+    </div>
+    <div class="band" style="--x:60%; --y:46%; --size:198px; --rot:-14deg; --delay:.80s; --float:4.3s;" data-speed="0.7">
+      <div class="band-drop"><img class="band-img" src="images/landing_page/hero/combatcover_band.svg" alt=""></div>
+    </div>
+    <div class="band" style="--x:64%; --y:80%; --size:226px; --rot:-27deg; --delay:.62s; --float:3.9s;" data-speed="0.9">
+      <div class="band-drop"><img class="band-img" src="images/landing_page/hero/combatcover_band.svg" alt=""></div>
+    </div>
+    <div class="band" style="--x:90%; --y:4%;  --size:165px; --rot:12deg;  --delay:.70s; --float:4.1s;" data-speed="0.6">
+      <div class="band-drop"><img class="band-img" src="images/landing_page/hero/combatcover_band.svg" alt=""></div>
+    </div>
+    <div class="band" style="--x:44%; --y:68%; --size:176px; --rot:28deg;  --delay:1.0s; --float:4.6s;" data-speed="0.5">
+      <div class="band-drop"><img class="band-img" src="images/landing_page/hero/combatcover_band.svg" alt=""></div>
+    </div>
+    <div class="band" style="--x:73%; --y:36%; --size:143px; --rot:-19deg; --delay:1.15s; --float:4.9s;" data-speed="0.4">
+      <div class="band-drop"><img class="band-img" src="images/landing_page/hero/combatcover_band.svg" alt=""></div>
+    </div>
+  </div>
 </div>
 
 <!-- ============================================================
@@ -469,8 +697,11 @@ footer {
 <nav id="navbar">
   <a href="#" class="nav-logo">Combat <em>Cover</em></a>
   <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
     <li><a href="product.html">Product</a></li>
     <li><a href="#materials">Specs</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="#contact">Contact</a></li>
     <li><a href="product.html" class="cta-link">Pre-order</a></li>
   </ul>
   <button class="hamburger" id="hamburger" aria-label="Open menu">
@@ -482,8 +713,8 @@ footer {
   <ul>
     <li><a href="product.html" class="menu-link">Product</a></li>
     <li><a href="#materials" class="menu-link">Specs</a></li>
-    <li><a href="#includes" class="menu-link">What's Included</a></li>
-    <li><a href="#care" class="menu-link">Fit &amp; Care</a></li>
+    <li><a href="about.html" class="menu-link">About</a></li>
+    <li><a href="#contact" class="menu-link">Contact</a></li>
   </ul>
   <a href="product.html" class="menu-cta menu-link">Pre-order Now</a>
 </div>
@@ -524,105 +755,130 @@ footer {
 </section>
 
 <!-- ============================================================
-     FEATURE SECTIONS (photo placeholders)
+     LIFESTYLE BAND
      ============================================================ -->
-<div id="features">
+<section id="lifestyle">
+  <img src="images/landing_page/hero/f3.jpeg" alt="Two fighters wearing Combat Cover in the cage">
+  <div class="lifestyle-overlay">
+    <div class="lifestyle-text reveal">
+      <span class="overline">Worn in the cage. Built for the gym.</span>
+      <p>One product.<br>Zero compromises.</p>
+      <div class="lifestyle-credits">
+        <span>Jean-Paul Lebosnoyani — UFC Welterweight</span>
+        <span>Dione Barbosa — UFC Flyweight</span>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <section class="feature-section">
-    <div class="feature-text">
-      <p class="feature-num reveal">01 — Safety</p>
-      <h3 class="feature-title reveal d1">No More Velcro<br>Scratches</h3>
-      <p class="feature-body reveal d2">
-        A seamless outer layer prevents exposed hook surfaces from catching
-        skin or fabric during sparring, grappling, and clinch work.
-      </p>
-    </div>
-    <div class="feature-visual reveal">
-      <img src="images/landing_page/sec01/sec1.jpg" alt="No more velcro scratches — Combat Cover in use">
-    </div>
-  </section>
+<!-- ============================================================
+     BENEFITS — 4-column card grid
+     ============================================================ -->
+<section id="features">
 
-  <section class="feature-section reverse">
-    <div class="feature-text">
-      <p class="feature-num reveal">02 — Fit</p>
-      <h3 class="feature-title reveal d1">Locked-In<br>Stability</h3>
-      <p class="feature-body reveal d2">
-        Silicone inner lining grips the glove surface, ensuring zero slippage
-        during grappling, striking, or transitions — no mid-round adjustment.
-      </p>
-    </div>
-    <div class="feature-visual reveal">
-      <img src="images/landing_page/sec02/sec2.jpg" alt="Locked-in stability — silicone grip lining">
-    </div>
-  </section>
+  <div class="benefits-intro reveal">
+    <span class="overline">Why Combat Cover</span>
+    <h2 class="headline">Four Reasons<br>To Train Better</h2>
+  </div>
 
-  <section class="feature-section">
-    <div class="feature-text">
-      <p class="feature-num reveal">03 — Comfort</p>
-      <h3 class="feature-title reveal d1">Built for Long<br>Sessions</h3>
-      <p class="feature-body reveal d2">
-        Breathable, moisture-wicking spandex keeps you comfortable and
-        performing through intense rounds without distraction or heat build-up.
-      </p>
-    </div>
-    <div class="feature-visual reveal">
-      <img src="images/landing_page/sec03/sec3.jpg" alt="Built for long sessions — breathable spandex">
-    </div>
-  </section>
+  <div class="benefits-grid">
 
-  <section class="feature-section reverse">
-    <div class="feature-text">
-      <p class="feature-num reveal">04 — Compatibility</p>
-      <h3 class="feature-title reveal d1">One Fit.<br>All Gloves.</h3>
-      <p class="feature-body reveal d2">
-        Designed to stretch across MMA, boxing, and hybrid glove systems.
-        One size fits the wrist base of most combat gloves.
-      </p>
+    <div class="benefit-card reveal">
+      <div class="benefit-photo">
+        <img src="images/landing_page/sec01/sec1.jpeg" alt="No more velcro scratches — Combat Cover in use">
+      </div>
+      <p class="benefit-num">01 Safety</p>
+      <h3 class="benefit-title">No More Velcro Scratches</h3>
+      <p class="benefit-body">A seamless outer layer prevents exposed hook surfaces from catching skin or fabric during sparring, grappling, and clinch work.</p>
     </div>
-    <div class="feature-visual reveal">
-      <img src="images/landing_page/sec04/sec4.jpg" alt="One fit, all gloves — universal compatibility">
-    </div>
-  </section>
 
-</div>
+    <div class="benefit-card reveal d1">
+      <div class="benefit-photo">
+        <img src="images/landing_page/sec02/sec2.jpg" alt="Locked-in stability — silicone grip lining">
+      </div>
+      <p class="benefit-num">02 Fit</p>
+      <h3 class="benefit-title">Locked-In Stability</h3>
+      <p class="benefit-body">Silicone inner lining grips the glove surface, ensuring zero slippage during grappling, striking, or transitions — no mid-round adjustment.</p>
+    </div>
+
+    <div class="benefit-card reveal d2">
+      <div class="benefit-photo">
+        <img src="images/landing_page/sec03/sec3.jpg" alt="Built for long sessions — breathable spandex">
+      </div>
+      <p class="benefit-num">03 Comfort</p>
+      <h3 class="benefit-title">Built for Long Sessions</h3>
+      <p class="benefit-body">Breathable, moisture-wicking spandex keeps you comfortable and performing through intense rounds without distraction or heat build-up.</p>
+    </div>
+
+    <div class="benefit-card reveal d3">
+      <div class="benefit-photo">
+        <img src="images/landing_page/sec04/sec4.jpg" alt="One fit, all gloves — universal compatibility">
+      </div>
+      <p class="benefit-num">04 Compatibility</p>
+      <h3 class="benefit-title">One Fit. All Gloves.</h3>
+      <p class="benefit-body">Designed to stretch across MMA, boxing, and hybrid glove systems. One size fits the wrist base of most combat gloves.</p>
+    </div>
+
+  </div>
+
+</section>
 
 <!-- ============================================================
      MATERIALS
      ============================================================ -->
 <section id="materials">
-  <div class="materials-inner">
-    <div>
-      <span class="overline reveal">Engineering</span>
-      <h2 class="headline reveal d1">Engineered<br>Materials</h2>
-      <p class="body-text reveal d2">
-        Every layer is selected for performance. No filler materials —
-        only what's needed to protect, grip, and last.
-      </p>
-    </div>
-    <ul class="material-list">
-      <li class="material-row reveal">
-        <span class="material-idx">01</span>
-        <div class="material-info">
-          <h4>Spandex Outer Shell</h4>
-          <p>Stretch spandex blend — breathable, abrasion-resistant, moisture-wicking.</p>
-        </div>
-      </li>
-      <li class="material-row reveal d1">
-        <span class="material-idx">02</span>
-        <div class="material-info">
-          <h4>Silicone Grip Lining</h4>
-          <p>Inner silicone layer creates friction against the glove, preventing slippage under load.</p>
-        </div>
-      </li>
-      <li class="material-row reveal d2">
-        <span class="material-idx">03</span>
-        <div class="material-info">
-          <h4>Reinforced Stitching</h4>
-          <p>Double-stitched at every stress point for repeated high-intensity use.</p>
-        </div>
-      </li>
-    </ul>
+
+  <div class="eng-head reveal">
+    <span class="overline light">Engineering</span>
+    <h2 class="headline">Engineered Materials</h2>
+    <p class="body-text">
+      Every layer is selected for performance. No filler materials —
+      only what's needed to protect, grip, and last.
+    </p>
   </div>
+
+  <figure class="eng-figure reveal">
+    <img src="images/f1.jpeg" alt="Combat Cover wristband — engineered materials in detail">
+
+    <!-- 0–100 viewBox = percentages of the frame, so lines track the band at any width -->
+    <svg class="eng-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <line x1="40" y1="42" x2="16.6" y2="100" vector-effect="non-scaling-stroke"/>
+      <line x1="50" y1="65" x2="50"   y2="100" vector-effect="non-scaling-stroke"/>
+      <line x1="58" y1="36" x2="83.3" y2="100" vector-effect="non-scaling-stroke"/>
+    </svg>
+
+    <span class="eng-dot" style="left:40%; top:42%;">
+      <a class="eng-dot-label eng-dot-label--left" href="#eng-spandex">Spandex Outer Shell</a>
+    </span>
+    <span class="eng-dot" style="left:50%; top:65%;">
+      <a class="eng-dot-label eng-dot-label--right" href="#eng-silicone">Silicone Grip</a>
+    </span>
+    <span class="eng-dot" style="left:58%; top:36%;">
+      <a class="eng-dot-label eng-dot-label--right" href="#eng-stitching">Double Stitching</a>
+    </span>
+  </figure>
+
+  <div class="eng-materials">
+    <div class="eng-card reveal" id="eng-spandex">
+      <img class="eng-thumb" src="images/landing_page/engineering_section/spandex.png" alt="Spandex outer shell weave">
+      <p class="num">01</p>
+      <h4>Spandex Outer Shell</h4>
+      <p>Stretch spandex blend — breathable, abrasion-resistant, and moisture-wicking.</p>
+    </div>
+    <div class="eng-card reveal d1" id="eng-silicone">
+      <img class="eng-thumb" src="images/landing_page/engineering_section/silicone.png" alt="Inner silicone grip lining">
+      <p class="num">02</p>
+      <h4>Inner Silicone Grip Lining</h4>
+      <p>Inner silicone layer creates friction against the glove, preventing slippage under load.</p>
+    </div>
+    <div class="eng-card reveal d2" id="eng-stitching">
+      <img class="eng-thumb" src="images/landing_page/engineering_section/stitching.png" alt="Reinforced double stitching">
+      <p class="num">03</p>
+      <h4>Reinforced Double Stitching</h4>
+      <p>Double-stitched at every stress point for repeated high-intensity use.</p>
+    </div>
+  </div>
+
 </section>
 
 <!-- ============================================================
@@ -633,33 +889,34 @@ footer {
     <span class="overline">In The Box</span>
     <h2 class="headline" style="font-size:clamp(28px,3vw,44px);">What's Included</h2>
   </div>
-  <div class="includes-grid">
-    <div class="include-card reveal">
-      <div class="include-icon">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-          <rect x="3" y="6" width="18" height="13" rx="1"/><path d="M3 10h18M8 6V4h8v2"/>
-        </svg>
-      </div>
-      <h4>2 Combat Covers</h4>
-      <p>One complete pair — fits the wrist and velcro base of standard MMA, boxing, and combat gloves.</p>
+  <div class="includes-layout">
+    <div class="includes-photos reveal">
+      <img src="images/landing_page/in-the-box/2combatocovers.jpg" alt="2 Combat Covers and mesh bag" class="photo-main">
+      <img src="images/landing_page/in-the-box/bag-open.jpg" alt="Mesh bag open" class="photo-detail">
+      <img src="images/landing_page/in-the-box/bag-closed.jpg" alt="Mesh bag closed" class="photo-detail">
     </div>
-    <div class="include-card reveal d1">
-      <div class="include-icon">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/>
-        </svg>
+    <div class="includes-list">
+      <div class="include-item reveal">
+        <span class="include-num">01</span>
+        <div>
+          <h4>2 Combat Covers</h4>
+          <p>One complete pair — fits the wrist and velcro base of standard MMA, boxing, and combat gloves.</p>
+        </div>
       </div>
-      <h4>Reusable Mesh Wash Bag</h4>
-      <p>Protective mesh laundry bag. Required for machine washing to maintain shape and longevity.</p>
-    </div>
-    <div class="include-card reveal d2">
-      <div class="include-icon">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12l2 2 4-4"/>
-        </svg>
+      <div class="include-item reveal d1">
+        <span class="include-num">02</span>
+        <div>
+          <h4>Reusable Mesh Wash Bag</h4>
+          <p>Protective mesh laundry bag. Required for machine washing to maintain shape and longevity.</p>
+        </div>
       </div>
-      <h4>Care Card</h4>
-      <p>Clear care instructions to keep your Combat Covers performing through years of training.</p>
+      <div class="include-item reveal d2">
+        <span class="include-num">03</span>
+        <div>
+          <h4>Care Card</h4>
+          <p>Clear care instructions to keep your Combat Covers performing through years of training.</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -676,18 +933,39 @@ footer {
     <div class="care-col reveal">
       <h3>Sizing</h3>
       <ul class="care-list">
-        <li>Fits the wrist and velcro base of most standard combat gloves</li>
-        <li>One size — stretch spandex accommodates a range of glove widths</li>
-        <li>Compatible with MMA, boxing, and hybrid glove systems</li>
+        <li>
+          <span class="care-icon"><img src="images/landing_page/instructions/Fits the wrist and velcro base of most standard combat gloves.png" alt=""></span>
+          Fits the wrist and velcro base of most standard combat gloves
+        </li>
+        <li>
+          <span class="care-icon"><img src="images/landing_page/instructions/One size — stretch spandex accommodates a range of glove widths.png" alt=""></span>
+          One size, stretch spandex accommodates a range of glove widths
+        </li>
+        <li>
+          <span class="care-icon"><img src="images/landing_page/instructions/Compatible with MMA, boxing, and hybrid glove systems.png" alt=""></span>
+          Compatible with MMA, boxing, and hybrid glove systems
+        </li>
       </ul>
     </div>
     <div class="care-col reveal d1">
       <h3>Care Instructions</h3>
       <ul class="care-list">
-        <li>Place inside included mesh wash bag before laundering</li>
-        <li>Machine wash cold, gentle cycle only</li>
-        <li>Do not tumble dry — air dry flat or hang</li>
-        <li>Do not bleach or iron silicone or printed areas</li>
+        <li>
+          <span class="care-icon"><img src="images/landing_page/instructions/Place inside included mesh wash bag before laundering.png" alt=""></span>
+          Place inside included mesh wash bag before laundering
+        </li>
+        <li>
+          <span class="care-icon"><img src="images/landing_page/instructions/Machine wash cold gentle cycle only.png" alt=""></span>
+          Machine wash cold, gentle cycle only
+        </li>
+        <li>
+          <span class="care-icon"><img src="images/landing_page/instructions/Do not tumble dry — air dry flat or hang.png" alt=""></span>
+          Do not tumble dry. Air dry flat or hang.
+        </li>
+        <li>
+          <span class="care-icon"><img src="images/landing_page/instructions/Do not bleach or iron silicone or printed areas.png" alt=""></span>
+          Do not bleach or iron silicone or printed areas
+        </li>
       </ul>
     </div>
   </div>
@@ -701,6 +979,26 @@ footer {
   <h2 class="cta-head reveal d1">Train Better.<br>Protect Your Partners.</h2>
   <p class="cta-sub reveal d2">Combat Covers — sold as one piece: 2 sleeves, 1 mesh bag, 1 care card.</p>
   <a href="product.html" class="btn btn-light reveal d3">Pre-order Now</a>
+</section>
+
+<!-- ============================================================
+     CONTACT
+     ============================================================ -->
+<section id="contact">
+  <div class="contact-inner">
+    <span class="overline reveal">Get in Touch</span>
+    <h2 class="headline reveal d1" style="font-size:clamp(28px,3vw,44px);">Stay in the Loop</h2>
+    <p class="body-text reveal d2" style="max-width:none;">
+      Be the first to know when pre-orders open. Drop your email and we'll reach out directly.
+    </p>
+    <form class="contact-form reveal d3" id="contact-form">
+      <div class="contact-row">
+        <input type="email" placeholder="your@email.com" class="contact-input" id="contact-email" required>
+        <button type="submit" class="btn btn-dark">Send</button>
+      </div>
+      <p class="contact-thanks" id="contact-thanks" style="display:none;">Thanks, we'll be in touch soon.</p>
+    </form>
+  </div>
 </section>
 
 <!-- ============================================================
@@ -739,19 +1037,7 @@ footer {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.162.0/examples/jsm/"
-  }
-}
-</script>
-
-<script type="module">
-import * as THREE from 'three'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-
+<script>
 gsap.registerPlugin(ScrollTrigger)
 
 // ─── Hero load-in ────────────────────────────────────────────
@@ -761,9 +1047,6 @@ document.querySelectorAll('.load-in').forEach(el => {
 
 // ─── Navbar scroll ───────────────────────────────────────────
 const navbar = document.getElementById('navbar')
-window.addEventListener('scroll', () => {
-  navbar.classList.toggle('solid', window.scrollY > 40)
-}, { passive: true })
 
 // ─── Hamburger menu ──────────────────────────────────────────
 const hamburger  = document.getElementById('hamburger')
@@ -788,154 +1071,44 @@ const revealObs = new IntersectionObserver(entries => {
 }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' })
 document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el))
 
-// ─── THREE.JS SETUP ──────────────────────────────────────────
-const viewer   = document.getElementById('product-viewer')
-const canvas   = document.getElementById('three-canvas')
-const W = () => window.innerWidth
-const H = () => window.innerHeight
+// ─── Floating-band parallax ──────────────────────────────────
+// Each band drifts down at its own speed as the user scrolls the hero
+const hero  = document.getElementById('hero')
+const bands = [...document.querySelectorAll('.band')]
+let ticking = false
 
-const scene  = new THREE.Scene()
-const camera = new THREE.PerspectiveCamera(45, W() / H(), 0.1, 100)
-camera.position.set(0, 0, 7)
-
-const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-renderer.shadowMap.enabled = true
-renderer.toneMapping = THREE.ACESFilmicToneMapping
-renderer.toneMappingExposure = 1.25
-
-function resizeRenderer() {
-  camera.aspect = W() / H()
-  camera.updateProjectionMatrix()
-  renderer.setSize(W(), H())
-}
-resizeRenderer()
-window.addEventListener('resize', resizeRenderer)
-
-// ─── LIGHTING ────────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0xffffff, 0.6))
-
-const key = new THREE.DirectionalLight(0xffffff, 3.5)
-key.position.set(5, 6, 6); key.castShadow = true
-scene.add(key)
-
-const fill = new THREE.DirectionalLight(0xD4C5A9, 2.0)
-fill.position.set(-5, -1, 4)
-scene.add(fill)
-
-const rim = new THREE.DirectionalLight(0x8B7355, 1.8)
-rim.position.set(0, 4, -6)
-scene.add(rim)
-
-scene.add(new THREE.HemisphereLight(0xF7F7F7, 0x8B7355, 0.5))
-
-// ─── PRODUCT CONFIGURATIONS ──────────────────────────────────
-const onMobile = window.innerWidth <= 900
-
-// On mobile: products spread across the full-width canvas above the title
-// On desktop: products cluster on the right half of the viewport
-const configs = onMobile ? [
-  { x: -1.0, y:  0.6, z:  0.0, scale: 0.75, rotX: -0.25, rotY:  0.6,  rotZ: -0.08, idleSpeed: 0.13, idlePhase: 0.0, parallaxSpeed: 0.4 },
-  { x:  1.2, y:  0.3, z: -1.0, scale: 0.58, rotX:  0.20, rotY: -0.5,  rotZ:  0.10, idleSpeed: 0.10, idlePhase: 1.2, parallaxSpeed: 0.3 },
-  { x: -0.2, y: -0.8, z: -1.8, scale: 0.45, rotX:  0.40, rotY:  1.8,  rotZ: -0.05, idleSpeed: 0.08, idlePhase: 2.4, parallaxSpeed: 0.2 },
-  { x:  1.6, y: -0.4, z: -0.6, scale: 0.52, rotX: -0.12, rotY:  2.8,  rotZ:  0.12, idleSpeed: 0.11, idlePhase: 3.6, parallaxSpeed: 0.3 },
-] : [
-  { x:  1.6, y:  1.2, z:  0.0, scale: 0.92, rotX: -0.25, rotY:  0.6,  rotZ: -0.08, idleSpeed: 0.13, idlePhase: 0.0, parallaxSpeed: 1.4 },
-  { x:  3.4, y:  0.1, z: -1.4, scale: 0.80, rotX:  0.20, rotY: -0.5,  rotZ:  0.10, idleSpeed: 0.10, idlePhase: 1.2, parallaxSpeed: 0.9 },
-  { x:  2.2, y: -1.1, z: -2.6, scale: 0.58, rotX:  0.40, rotY:  1.8,  rotZ: -0.05, idleSpeed: 0.08, idlePhase: 2.4, parallaxSpeed: 0.5 },
-  { x:  3.7, y: -1.9, z: -0.6, scale: 0.74, rotX: -0.12, rotY:  2.8,  rotZ:  0.12, idleSpeed: 0.11, idlePhase: 3.6, parallaxSpeed: 1.1 },
-]
-
-// Groups that hold each clone; populated once GLB loads
-const clones = configs.map(cfg => ({
-  cfg,
-  group: new THREE.Group(),
-  baseY: cfg.y,
-}))
-clones.forEach(c => scene.add(c.group))
-
-// ─── LOAD GLB ────────────────────────────────────────────────
-const loader = new GLTFLoader()
-loader.load('3d_model/3dmodel.glb', gltf => {
-
-  // Compute scale from bounding box of the source scene
-  const src  = gltf.scene
-  const box  = new THREE.Box3().setFromObject(src)
-  const size = box.getSize(new THREE.Vector3())
-  const center = box.getCenter(new THREE.Vector3())
-  const maxDim = Math.max(size.x, size.y, size.z)
-  const baseScale = 1.8 / maxDim   // base world-unit size; configs apply their own multiplier
-
-  clones.forEach((c, i) => {
-    const model = (i === 0 ? src : src.clone(true))
-
-    // Center model at origin
-    model.position.sub(center)
-    model.scale.setScalar(baseScale * c.cfg.scale)
-
-    // Enable shadows on all meshes
-    model.traverse(child => {
-      if (child.isMesh) { child.castShadow = true; child.receiveShadow = true }
-    })
-
-    c.group.add(model)
-
-    // Position group
-    c.group.position.set(c.cfg.x, c.cfg.y + 18, c.cfg.z)  // start high (drop-in)
-    c.group.rotation.set(c.cfg.rotX, c.cfg.rotY, c.cfg.rotZ)
-
-    // Drop-in animation — staggered, slow ease
-    gsap.to(c.group.position, {
-      y: c.cfg.y,
-      duration: 1.6,
-      delay: 0.3 + i * 0.18,
-      ease: 'power3.out'
-    })
+function onScroll() {
+  navbar.classList.toggle('solid', window.scrollY > 40)
+  const heroH = hero.offsetHeight
+  const progress = Math.min(window.scrollY / heroH, 1)
+  bands.forEach(b => {
+    const speed = parseFloat(b.dataset.speed) || 1
+    b.style.transform = `translate3d(0, ${progress * speed * 160}px, 0)`
   })
+  ticking = false
+}
+window.addEventListener('scroll', () => {
+  if (!ticking) { requestAnimationFrame(onScroll); ticking = true }
+}, { passive: true })
+onScroll()
 
-  document.getElementById('loader').classList.add('hidden')
+// ─── Contact form ─────────────────────────────────────────────
+document.getElementById('contact-form').addEventListener('submit', e => {
+  e.preventDefault()
+  document.getElementById('contact-email').value = ''
+  const thanks = document.getElementById('contact-thanks')
+  thanks.style.display = 'block'
 })
 
-// ─── SCROLL PARALLAX ─────────────────────────────────────────
-// Each clone drifts at its own speed as the user scrolls through the hero
-let scrollY = 0
-window.addEventListener('scroll', () => {
-  scrollY = window.scrollY
-}, { passive: true })
-
-// Hide canvas once user scrolls past the hero section
+// ─── Fade bands out as the lifestyle section enters ──────────
+const viewer = document.getElementById('product-viewer')
 ScrollTrigger.create({
-  trigger: '#features',
-  start: 'top 30%',
+  trigger: '#lifestyle',
+  start: 'top 80%',
+  end: 'top 20%',
   onEnter()     { viewer.classList.add('gone')    },
   onLeaveBack() { viewer.classList.remove('gone') }
 })
-
-// ─── RENDER LOOP ─────────────────────────────────────────────
-const clock = new THREE.Clock()
-
-;(function animate() {
-  requestAnimationFrame(animate)
-  const t = clock.getElapsedTime()
-  const heroH = document.getElementById('hero').offsetHeight
-  const scrollProgress = Math.min(scrollY / heroH, 1)
-
-  clones.forEach(c => {
-    // Parallax: each product drifts down at its own speed
-    const parallaxY = -scrollProgress * c.cfg.parallaxSpeed * 4.5
-
-    // Idle float: gentle oscillation unique to each product
-    const floatY = Math.sin(t * c.cfg.idleSpeed * 6 + c.cfg.idlePhase) * 0.06
-    const floatZ = Math.sin(t * c.cfg.idleSpeed * 4 + c.cfg.idlePhase) * 0.015
-
-    c.group.position.y = c.baseY + parallaxY + floatY
-    c.group.rotation.y = c.cfg.rotY + t * c.cfg.idleSpeed
-    c.group.rotation.z = c.cfg.rotZ + floatZ
-  })
-
-  renderer.render(scene, camera)
-})()
-
 </script>
 </body>
 </html>

@@ -73,7 +73,7 @@ nav {
   border-bottom: 1px solid var(--border);
   max-height: 0; overflow: hidden; transition: max-height 0.4s var(--ease);
 }
-#mobile-menu.open { max-height: 260px; }
+#mobile-menu.open { max-height: 380px; }
 #mobile-menu ul { list-style: none; padding: 16px 24px 28px; display: flex; flex-direction: column; }
 #mobile-menu li { border-bottom: 1px solid var(--border); }
 #mobile-menu li:last-child { border-bottom: none; }
@@ -133,8 +133,22 @@ nav {
   font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--accent); background: rgba(247,247,247,0.85);
   padding: 7px 12px; border-radius: 2px; border: 1px solid var(--border);
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px); cursor: pointer;
+  transition: background 0.2s, color 0.2s;
 }
+.gallery-badge:hover { background: var(--warm); color: var(--text); }
+
+.gallery-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 4;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(255,255,255,0.88); backdrop-filter: blur(6px);
+  border: 1px solid var(--border); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text); transition: background 0.2s, transform 0.2s;
+}
+.gallery-arrow:hover { background: #fff; transform: translateY(-50%) scale(1.08); }
+.gallery-prev { left: 14px; }
+.gallery-next { right: 14px; }
 .drag-hint {
   position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 3;
   font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
@@ -143,7 +157,7 @@ nav {
 }
 .drag-hint.hide { opacity: 0; }
 
-.thumbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 16px; }
+.thumbs { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-top: 16px; }
 .thumb {
   position: relative; aspect-ratio: 1 / 1; border-radius: 3px; overflow: hidden;
   border: 1px solid var(--border); cursor: pointer; background: var(--warm);
@@ -356,7 +370,7 @@ footer {
 }
 
 @media (max-width: 460px) {
-  .thumbs { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .thumbs { grid-template-columns: repeat(7, 1fr); gap: 6px; }
   .buy-row { flex-wrap: wrap; }
 }
 
@@ -370,8 +384,11 @@ footer {
 <nav>
   <a href="index.html" class="nav-logo">Combat <em>Cover</em></a>
   <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
     <li><a href="index.html#features">Product</a></li>
-    <li><a href="#specs">Specs</a></li>
+    <li><a href="index.html#materials">Specs</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
     <li><a href="#buy" class="cta-link">Pre-order</a></li>
   </ul>
   <button class="hamburger" id="hamburger" aria-label="Open menu">
@@ -381,9 +398,10 @@ footer {
 
 <div id="mobile-menu">
   <ul>
-    <li><a href="index.html#features" class="menu-link">Product</a></li>
-    <li><a href="#specs" class="menu-link">Specs</a></li>
     <li><a href="index.html" class="menu-link">Home</a></li>
+    <li><a href="index.html#features" class="menu-link">Product</a></li>
+    <li><a href="index.html#materials" class="menu-link">Specs</a></li>
+    <li><a href="index.html#contact" class="menu-link">Contact</a></li>
   </ul>
   <a href="#buy" class="menu-cta menu-link">Pre-order Now</a>
 </div>
@@ -399,10 +417,20 @@ footer {
       <span class="gallery-badge">360° View</span>
       <canvas id="three-canvas"></canvas>
 
-      <img class="gallery-photo" data-photo="0" src="images/landing_page/sec01/sec1.jpg" alt="Combat Cover worn during training">
-      <img class="gallery-photo" data-photo="1" src="images/landing_page/sec02/sec2.jpg" alt="Combat Cover on a boxing glove">
-      <img class="gallery-photo" data-photo="2" src="images/landing_page/sec03/sec3.jpg" alt="Combat Cover close fit on the wrist">
-      <img class="gallery-photo" data-photo="3" src="images/landing_page/sec04/sec4.jpg" alt="Combat Cover worn by athletes">
+      <img class="gallery-photo" data-photo="0" src="images/product_page/1.jpeg" alt="Combat Cover worn during training">
+      <img class="gallery-photo" data-photo="1" src="images/product_page/2.jpeg" alt="Combat Cover on a boxing glove">
+      <img class="gallery-photo" data-photo="2" src="images/product_page/3.jpeg" alt="Combat Cover close fit on the wrist">
+      <img class="gallery-photo" data-photo="3" src="images/product_page/4.jpeg" alt="Combat Cover worn by athletes">
+      <img class="gallery-photo" data-photo="4" src="images/product_page/5.jpeg" alt="Combat Cover detail">
+      <img class="gallery-photo" data-photo="5" src="images/product_page/6.jpeg" alt="Combat Cover in use">
+      <img class="gallery-photo" data-photo="6" src="images/product_page/7.jpeg" alt="Combat Cover detail shot">
+
+      <button class="gallery-arrow gallery-prev" id="gallery-prev" aria-label="Previous photo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="gallery-arrow gallery-next" id="gallery-next" aria-label="Next photo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
 
       <div class="gallery-loader" id="gallery-loader"><span class="loader-ring"></span></div>
       <div class="drag-hint" id="drag-hint">
@@ -422,16 +450,19 @@ footer {
           3D
         </span>
       </button>
-      <button class="thumb" data-view="0" aria-label="Photo 1"><img src="images/landing_page/sec01/sec1.jpg" alt=""></button>
-      <button class="thumb" data-view="1" aria-label="Photo 2"><img src="images/landing_page/sec02/sec2.jpg" alt=""></button>
-      <button class="thumb" data-view="2" aria-label="Photo 3"><img src="images/landing_page/sec03/sec3.jpg" alt=""></button>
-      <button class="thumb" data-view="3" aria-label="Photo 4"><img src="images/landing_page/sec04/sec4.jpg" alt=""></button>
+      <button class="thumb" data-view="0" aria-label="Photo 1"><img src="images/product_page/1.jpeg" alt=""></button>
+      <button class="thumb" data-view="1" aria-label="Photo 2"><img src="images/product_page/2.jpeg" alt=""></button>
+      <button class="thumb" data-view="2" aria-label="Photo 3"><img src="images/product_page/3.jpeg" alt=""></button>
+      <button class="thumb" data-view="3" aria-label="Photo 4"><img src="images/product_page/4.jpeg" alt=""></button>
+      <button class="thumb" data-view="4" aria-label="Photo 5"><img src="images/product_page/5.jpeg" alt=""></button>
+      <button class="thumb" data-view="5" aria-label="Photo 6"><img src="images/product_page/6.jpeg" alt=""></button>
+      <button class="thumb" data-view="6" aria-label="Photo 7"><img src="images/product_page/7.jpeg" alt=""></button>
     </div>
   </div>
 
   <!-- ── Info ── -->
   <div class="info load-in" style="animation-delay:.18s">
-    <span class="eyebrow">01 — Safety</span>
+    <span class="eyebrow">01 Safety</span>
     <h1 class="title">Combat<br>Cover</h1>
     <p class="subtitle">Train Hard. Protect Smarter.</p>
     <p class="lede">
@@ -707,20 +738,38 @@ const photos   = [...document.querySelectorAll('.gallery-photo')]
 const thumbs   = [...document.querySelectorAll('.thumb')]
 const dragHint = document.getElementById('drag-hint')
 let autoRotate = true
+const photoViews = photos.map(p => p.dataset.photo)
+let currentPhotoIdx = -1  // -1 = 3D view active
 
 function showView(view) {
   thumbs.forEach(t => t.classList.toggle('active', t.dataset.view === view))
   if (view === '3d') {
     photos.forEach(p => p.classList.remove('active'))
+    currentPhotoIdx = -1
     autoRotate = true
     dragHint.classList.remove('hide')
   } else {
     photos.forEach(p => p.classList.toggle('active', p.dataset.photo === view))
+    currentPhotoIdx = photoViews.indexOf(view)
     autoRotate = false
     dragHint.classList.add('hide')
   }
 }
 thumbs.forEach(t => t.addEventListener('click', () => showView(t.dataset.view)))
+
+/* 360 badge click returns to 3D view */
+document.querySelector('.gallery-badge').addEventListener('click', () => showView('3d'))
+
+/* Prev / Next arrows — when coming from 3D, Next → first photo, Prev → last photo */
+document.getElementById('gallery-prev').addEventListener('click', () => {
+  const start = currentPhotoIdx === -1 ? photoViews.length : currentPhotoIdx
+  currentPhotoIdx = (start - 1 + photoViews.length) % photoViews.length
+  showView(photoViews[currentPhotoIdx])
+})
+document.getElementById('gallery-next').addEventListener('click', () => {
+  currentPhotoIdx = (currentPhotoIdx + 1) % photoViews.length
+  showView(photoViews[currentPhotoIdx])
+})
 
 /* ─── THREE.JS — contained product viewer ───────────────────── */
 const canvas = document.getElementById('three-canvas')

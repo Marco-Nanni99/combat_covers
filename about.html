@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Combat Cover</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:       #F7F7F7;
+  --text:     #111111;
+  --accent:   #8B7355;
+  --accent-lt:#D4C5A9;
+  --mid:      #686868;
+  --border:   #E0DDD8;
+  --warm:     #F0EDE8;
+  --dark-bg:  #111111;
+  --font:     'Inter', -apple-system, 'Helvetica Neue', sans-serif;
+  --ease:     cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html { background: var(--bg); color: var(--text); font-family: var(--font);
+       -webkit-font-smoothing: antialiased; }
+body { overflow-x: hidden; }
+a    { text-decoration: none; color: inherit; }
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 200;
+  height: 68px; padding: 0 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.4s, border-color 0.4s, backdrop-filter 0.4s;
+}
+nav.solid {
+  background: rgba(247,247,247,0.92);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo { font-size: 12px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; }
+.nav-logo em { font-style: normal; color: var(--accent); }
+.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav-links a { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+               color: var(--mid); transition: color 0.2s; }
+.nav-links a:hover { color: var(--text); }
+.nav-links .cta-link { background: var(--text); color: var(--bg); padding: 9px 22px;
+                        border-radius: 2px; transition: background 0.2s, transform 0.2s; }
+.nav-links .cta-link:hover { background: var(--accent); color: #fff; transform: translateY(-1px); }
+
+/* ============================================================
+   HAMBURGER
+   ============================================================ */
+.hamburger {
+  display: none; flex-direction: column; justify-content: center;
+  gap: 5px; background: none; border: none; cursor: pointer; padding: 6px 4px; z-index: 201;
+}
+.hamburger span {
+  display: block; width: 22px; height: 2px; background: var(--text);
+  border-radius: 1px; transition: transform 0.35s var(--ease), opacity 0.25s;
+  transform-origin: center;
+}
+.hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.active span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+#mobile-menu {
+  position: fixed; top: 68px; left: 0; right: 0; z-index: 190;
+  background: rgba(247,247,247,0.97); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border); max-height: 0; overflow: hidden;
+  transition: max-height 0.4s var(--ease);
+}
+#mobile-menu.open { max-height: 380px; }
+#mobile-menu ul { list-style: none; padding: 16px 24px 28px; display: flex; flex-direction: column; gap: 0; }
+#mobile-menu li { border-bottom: 1px solid var(--border); }
+#mobile-menu li:last-child { border-bottom: none; }
+#mobile-menu a { display: block; padding: 16px 0; font-size: 13px; font-weight: 600;
+                  letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+.menu-cta { display: block; margin: 16px 24px 24px; background: var(--text); color: var(--bg) !important;
+             text-align: center; padding: 16px; border-radius: 2px;
+             font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ============================================================
+   SHARED
+   ============================================================ */
+.overline {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--accent);
+  display: block; margin-bottom: 18px;
+}
+.btn {
+  display: inline-block; border: none; cursor: pointer;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 15px 36px; border-radius: 2px;
+  transition: background 0.2s, color 0.2s, transform 0.2s, border-color 0.2s;
+}
+.btn-dark  { background: var(--text); color: var(--bg); }
+.btn-dark:hover  { background: var(--accent); transform: translateY(-2px); }
+.btn-light { background: #fff; color: var(--text); }
+.btn-light:hover { background: var(--accent-lt); transform: translateY(-2px); }
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+.reveal {
+  opacity: 0; transform: translateY(28px);
+  transition: opacity 0.85s var(--ease), transform 0.85s var(--ease);
+}
+.reveal.d1 { transition-delay: 0.1s; }
+.reveal.d2 { transition-delay: 0.22s; }
+.reveal.d3 { transition-delay: 0.34s; }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ============================================================
+   ABOUT HERO
+   ============================================================ */
+#about-hero {
+  padding: 180px 10% 120px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  max-width: 100%;
+}
+.about-hero-overline {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 32px;
+}
+.about-hero-headline {
+  font-size: clamp(36px, 5.5vw, 80px);
+  font-weight: 900; line-height: 1.04; letter-spacing: -0.04em;
+  max-width: 900px;
+}
+
+/* ============================================================
+   FOUNDER SECTION
+   ============================================================ */
+#founder {
+  display: grid; grid-template-columns: 1fr 1fr;
+  align-items: stretch; background: var(--warm);
+}
+.founder-visual { overflow: hidden; }
+.founder-visual img {
+  width: 100%; height: auto; display: block;
+  transition: transform 0.7s var(--ease);
+}
+#founder:hover .founder-visual img { transform: scale(1.02); }
+.founder-text {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 100px 72px;
+}
+.founder-text p {
+  font-size: clamp(15px, 1.4vw, 17px); line-height: 1.78; color: var(--mid);
+  margin-bottom: 0;
+}
+.founder-credit {
+  margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border);
+}
+.founder-credit strong { display: block; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.founder-credit span { font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+                        text-transform: uppercase; color: var(--accent); }
+
+/* ============================================================
+   TRANSITION QUOTE
+   ============================================================ */
+#transition-quote {
+  background: var(--bg); padding: 120px 10%;
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+}
+.transition-quote-inner { max-width: 760px; text-align: center; }
+.transition-quote-inner p {
+  font-size: clamp(22px, 2.8vw, 38px); font-weight: 800;
+  line-height: 1.25; letter-spacing: -0.025em; color: var(--text);
+}
+
+/* ============================================================
+   ACTION BAND
+   ============================================================ */
+#action-band {
+  position: relative; overflow: hidden;
+  height: clamp(480px, 65vw, 760px);
+}
+#action-band img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center 40%; display: block;
+}
+#action-band .band-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 55%, transparent 100%);
+  display: flex; align-items: center; padding: 0 10%;
+}
+.band-text { color: #fff; max-width: 520px; }
+.band-text .overline { color: rgba(255,255,255,0.55); margin-bottom: 24px; }
+.band-text p {
+  font-size: clamp(16px, 1.8vw, 20px); line-height: 1.72; color: rgba(255,255,255,0.82);
+}
+
+/* ============================================================
+   MISSION
+   ============================================================ */
+#mission {
+  background: var(--dark-bg); padding: 140px 10%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center;
+}
+.mission-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--accent-lt); margin-bottom: 40px; display: block;
+}
+.mission-text {
+  font-size: clamp(20px, 2.4vw, 32px); font-weight: 700;
+  line-height: 1.5; letter-spacing: -0.02em;
+  color: #fff; max-width: 820px;
+}
+.mission-text em { font-style: normal; color: var(--accent-lt); }
+
+/* ============================================================
+   PHOTO STRIP
+   ============================================================ */
+#photo-strip {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+}
+#photo-strip img {
+  width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block;
+  transition: transform 0.7s var(--ease);
+}
+#photo-strip img:hover { transform: scale(1.03); }
+.strip-item { overflow: hidden; position: relative; }
+
+/* ============================================================
+   CTA
+   ============================================================ */
+#cta {
+  background: var(--dark-bg); min-height: 60vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 120px 20%;
+}
+.cta-pre  { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+             color: var(--accent-lt); margin-bottom: 24px; }
+.cta-head { font-size: clamp(36px, 4.5vw, 64px); font-weight: 900; line-height: 1.05;
+             letter-spacing: -0.035em; color: #fff; margin-bottom: 32px; max-width: 640px; }
+.cta-sub  { font-size: 16px; line-height: 1.68; color: rgba(247,247,247,0.5);
+             margin-bottom: 56px; max-width: 460px; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  background: #080808; padding: 72px 10%;
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 48px;
+}
+.ft-brand .ft-logo { font-size: 12px; font-weight: 800; letter-spacing: 0.18em;
+                      text-transform: uppercase; color: #fff; margin-bottom: 12px; }
+.ft-brand .ft-tag  { font-size: 11px; color: rgba(255,255,255,0.28);
+                      letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.6; }
+.ft-col h5 { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+              color: rgba(255,255,255,0.3); margin-bottom: 20px; }
+.ft-col ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.ft-col a  { font-size: 13px; color: rgba(255,255,255,0.55); transition: color 0.2s; }
+.ft-col a:hover { color: #fff; }
+.ft-copy {
+  grid-column: 1 / -1; border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 32px; display: flex; justify-content: space-between;
+  font-size: 11px; color: rgba(255,255,255,0.22);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  nav { padding: 0 24px; }
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+
+  #about-hero { padding: 130px 24px 80px; }
+
+  #founder { grid-template-columns: 1fr; }
+  .founder-visual { order: -1; }
+  .founder-text { padding: 56px 24px; }
+
+  #transition-quote { padding: 80px 24px; }
+
+  .band-text { max-width: 100%; }
+
+  #mission { padding: 96px 24px; }
+
+  #photo-strip { grid-template-columns: 1fr; }
+  #photo-strip img { aspect-ratio: 4/3; }
+
+  #cta { padding: 88px 24px; min-height: auto; }
+
+  footer { grid-template-columns: 1fr; padding: 56px 24px; }
+  .ft-copy { flex-direction: column; gap: 8px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav id="navbar">
+  <a href="index.html" class="nav-logo">Combat <em>Cover</em></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="product.html">Product</a></li>
+    <li><a href="index.html#materials">Specs</a></li>
+    <li><a href="about.html" style="color: var(--text);">About</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+    <li><a href="product.html" class="cta-link">Pre-order</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div id="mobile-menu">
+  <ul>
+    <li><a href="index.html" class="menu-link">Home</a></li>
+    <li><a href="product.html" class="menu-link">Product</a></li>
+    <li><a href="index.html#materials" class="menu-link">Specs</a></li>
+    <li><a href="about.html" class="menu-link">About</a></li>
+    <li><a href="index.html#contact" class="menu-link">Contact</a></li>
+  </ul>
+  <a href="product.html" class="menu-cta menu-link">Pre-order Now</a>
+</div>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section id="about-hero">
+  <span class="about-hero-overline reveal">Our Story</span>
+  <h1 class="about-hero-headline reveal d1">Combat Cover was born from a problem every MMA athlete knows too well.</h1>
+</section>
+
+<!-- ============================================================
+     FOUNDER
+     ============================================================ -->
+<section id="founder">
+  <div class="founder-visual">
+    <img src="images/f8.jpeg" alt="Jean-Paul Lebosnoyani, UFC Welterweight">
+  </div>
+  <div class="founder-text">
+    <p class="reveal d1">After spending thousands of hours training as a lifelong martial artist and UFC fighter, Jean-Paul Lebosnoyani experienced firsthand the scratches, cuts, and skin infections caused by exposed glove Velcro. Like most fighters, he relied on wrapping tape around his gloves before every session — a time-consuming fix that can leave sticky residue and wear down the gloves over time.</p>
+    <div class="founder-credit reveal d2">
+      <strong>Jean-Paul Lebosnoyani</strong>
+      <span>UFC Welterweight</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     TRANSITION QUOTE
+     ============================================================ -->
+<section id="transition-quote">
+  <div class="transition-quote-inner">
+    <p class="reveal">Knowing there had to be a better solution, the Combat Cover team set out to create one.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     ACTION BAND
+     ============================================================ -->
+<section id="action-band">
+  <img src="images/f7.jpeg" alt="Fighters sparring with Combat Cover">
+  <div class="band-overlay">
+    <div class="band-text">
+      <span class="overline">The Solution</span>
+      <p class="reveal">After extensive prototyping and real-world testing, Combat Cover was developed: a simple, reusable sleeve that rolls over your glove's Velcro in seconds, protecting you and your training partners while helping extend the life of your equipment.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     MISSION
+     ============================================================ -->
+<section id="mission">
+  <span class="mission-label reveal">Our Mission</span>
+  <p class="mission-text reveal d1">Built by fighters, for fighters, Combat Cover is designed to eliminate an everyday frustration so you can spend less time taping your gloves and more time focused on training. What started as a solution to one of the sport's most common problems has become a product we're proud to share with the entire MMA community.</p>
+</section>
+
+<!-- ============================================================
+     PHOTO STRIP
+     ============================================================ -->
+<div id="photo-strip">
+  <div class="strip-item">
+    <img src="images/f1.jpeg" alt="Combat Cover on glove">
+  </div>
+  <div class="strip-item">
+    <img src="images/f2.jpeg" alt="Combat Cover at the cage">
+  </div>
+  <div class="strip-item">
+    <img src="images/f12.jpeg" alt="Combat Cover detail">
+  </div>
+</div>
+
+<!-- ============================================================
+     CTA
+     ============================================================ -->
+<section id="cta">
+  <p class="cta-pre reveal">Built by fighters. For fighters.</p>
+  <h2 class="cta-head reveal d1">Train Better.<br>Protect Your Partners.</h2>
+  <p class="cta-sub reveal d2">Combat Cover — sold as one piece: 2 sleeves, 1 mesh bag, 1 care card.</p>
+  <a href="product.html" class="btn btn-light reveal d3">Pre-order Now</a>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <div class="ft-brand">
+    <div class="ft-logo">Combat Cover</div>
+    <div class="ft-tag">Where there is preparation,<br>there is no fear.</div>
+  </div>
+  <div class="ft-col">
+    <h5>Product</h5>
+    <ul>
+      <li><a href="index.html#features">Features</a></li>
+      <li><a href="index.html#materials">Materials</a></li>
+      <li><a href="index.html#includes">What's Included</a></li>
+    </ul>
+  </div>
+  <div class="ft-col">
+    <h5>Support</h5>
+    <ul>
+      <li><a href="index.html#care">Fit &amp; Care</a></li>
+      <li><a href="#">Contact</a></li>
+      <li><a href="#">Shipping &amp; Returns</a></li>
+    </ul>
+  </div>
+  <div class="ft-copy">
+    <span>© 2025 Combat Cover. All rights reserved.</span>
+    <span>Made for fighters, by fighters.</span>
+  </div>
+</footer>
+
+<script>
+const navbar   = document.getElementById('navbar')
+const hamburger  = document.getElementById('hamburger')
+const mobileMenu = document.getElementById('mobile-menu')
+
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('solid', window.scrollY > 40)
+}, { passive: true })
+
+hamburger.addEventListener('click', () => {
+  hamburger.classList.toggle('active')
+  mobileMenu.classList.toggle('open')
+})
+mobileMenu.querySelectorAll('.menu-link').forEach(link => {
+  link.addEventListener('click', () => {
+    hamburger.classList.remove('active')
+    mobileMenu.classList.remove('open')
+  })
+})
+
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target) }
+  })
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' })
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el))
+</script>
+
+</body>
+</html>
