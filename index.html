@@ -711,6 +711,7 @@ footer {
 
 <div id="mobile-menu">
   <ul>
+    <li><a href="index.html" class="menu-link">Home</a></li>
     <li><a href="product.html" class="menu-link">Product</a></li>
     <li><a href="#materials" class="menu-link">Specs</a></li>
     <li><a href="about.html" class="menu-link">About</a></li>
@@ -1021,7 +1022,7 @@ footer {
     <h5>Support</h5>
     <ul>
       <li><a href="#care">Fit &amp; Care</a></li>
-      <li><a href="#">Contact</a></li>
+      <li><a href="#contact">Contact</a></li>
       <li><a href="#">Shipping &amp; Returns</a></li>
     </ul>
   </div>
@@ -1039,6 +1040,12 @@ footer {
 
 <script>
 gsap.registerPlugin(ScrollTrigger)
+
+// ─── Klaviyo signup bridge ─────────────────────────────────────
+// Account > Settings > API Keys > Public API Key ("Company ID")
+const KLAVIYO_COMPANY_ID = 'YOUR_KLAVIYO_PUBLIC_API_KEY'
+// Lists & Segments > your list > Settings
+const KLAVIYO_LIST_ID = 'YOUR_KLAVIYO_LIST_ID'
 
 // ─── Hero load-in ────────────────────────────────────────────
 document.querySelectorAll('.load-in').forEach(el => {
@@ -1093,11 +1100,39 @@ window.addEventListener('scroll', () => {
 onScroll()
 
 // ─── Contact form ─────────────────────────────────────────────
-document.getElementById('contact-form').addEventListener('submit', e => {
+document.getElementById('contact-form').addEventListener('submit', async e => {
   e.preventDefault()
-  document.getElementById('contact-email').value = ''
-  const thanks = document.getElementById('contact-thanks')
-  thanks.style.display = 'block'
+  const emailInput = document.getElementById('contact-email')
+  const submitBtn  = e.target.querySelector('button[type="submit"]')
+  const thanks     = document.getElementById('contact-thanks')
+  const email      = emailInput.value.trim()
+
+  submitBtn.disabled = true
+  try {
+    const res = await fetch(`https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_COMPANY_ID}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', revision: '2024-10-15' },
+      body: JSON.stringify({
+        data: {
+          type: 'subscription',
+          attributes: {
+            profile: { data: { type: 'profile', attributes: { email } } },
+          },
+          relationships: {
+            list: { data: { type: 'list', id: KLAVIYO_LIST_ID } },
+          },
+        },
+      }),
+    })
+    if (!res.ok) throw new Error('Signup failed')
+    emailInput.value = ''
+    thanks.textContent = "Thanks, we'll be in touch soon."
+  } catch (err) {
+    thanks.textContent = 'Something went wrong — please try again.'
+  } finally {
+    thanks.style.display = 'block'
+    submitBtn.disabled = false
+  }
 })
 
 // ─── Fade bands out as the lifestyle section enters ──────────

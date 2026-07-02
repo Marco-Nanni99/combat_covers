@@ -106,37 +106,13 @@ nav {
   border: 1px solid var(--border); border-radius: 4px;
   aspect-ratio: 1 / 1; overflow: hidden;
 }
-#three-canvas { width: 100%; height: 100%; display: block; }
-
-/* photo layer sits over the canvas when a photo thumb is chosen */
+/* photo layer */
 .gallery-photo {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; opacity: 0; visibility: hidden;
   transition: opacity 0.5s var(--ease);
 }
 .gallery-photo.active { opacity: 1; visibility: visible; }
-
-.gallery-loader {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  pointer-events: none; transition: opacity 0.4s;
-}
-.gallery-loader.hidden { opacity: 0; }
-.loader-ring {
-  width: 26px; height: 26px; border-radius: 50%;
-  border: 2px solid var(--border); border-top-color: var(--accent);
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.gallery-badge {
-  position: absolute; top: 18px; left: 18px; z-index: 3;
-  font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--accent); background: rgba(247,247,247,0.85);
-  padding: 7px 12px; border-radius: 2px; border: 1px solid var(--border);
-  backdrop-filter: blur(6px); cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-.gallery-badge:hover { background: var(--warm); color: var(--text); }
 
 .gallery-arrow {
   position: absolute; top: 50%; transform: translateY(-50%); z-index: 4;
@@ -149,15 +125,8 @@ nav {
 .gallery-arrow:hover { background: #fff; transform: translateY(-50%) scale(1.08); }
 .gallery-prev { left: 14px; }
 .gallery-next { right: 14px; }
-.drag-hint {
-  position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 3;
-  font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--mid); display: flex; align-items: center; gap: 8px;
-  transition: opacity 0.4s; pointer-events: none;
-}
-.drag-hint.hide { opacity: 0; }
 
-.thumbs { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-top: 16px; }
+.thumbs { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 16px; }
 .thumb {
   position: relative; aspect-ratio: 1 / 1; border-radius: 3px; overflow: hidden;
   border: 1px solid var(--border); cursor: pointer; background: var(--warm);
@@ -166,12 +135,6 @@ nav {
 .thumb:hover { transform: translateY(-2px); }
 .thumb.active { border-color: var(--text); }
 .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.thumb-3d {
-  display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(160deg, #fff 0%, var(--warm) 100%);
-  font-size: 9px; font-weight: 800; letter-spacing: 0.08em; color: var(--accent);
-  text-transform: uppercase; gap: 4px;
-}
 
 /* ── Info (right) ──────────────────────────────────────────── */
 .info { padding-top: 8px; }
@@ -200,18 +163,8 @@ nav {
   font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
   color: var(--mid); margin-bottom: 14px;
 }
-.size-guide { color: var(--accent); display: inline-flex; align-items: center; gap: 6px;
-              cursor: pointer; transition: gap 0.2s; }
-.size-guide:hover { gap: 9px; }
-
-.sizes { display: flex; gap: 10px; margin-bottom: 30px; }
-.size-btn {
-  width: 58px; height: 50px; border: 1px solid var(--border); background: #fff;
-  border-radius: 3px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text);
-  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.15s;
-}
-.size-btn:hover { border-color: var(--text); }
-.size-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.one-size-tag { color: var(--accent); font-weight: 700; }
+.one-size-note { font-size: 13.5px; color: var(--mid); line-height: 1.6; margin-bottom: 30px; }
 
 .buy-row { display: flex; gap: 14px; margin-bottom: 18px; }
 .qty {
@@ -401,6 +354,7 @@ footer {
     <li><a href="index.html" class="menu-link">Home</a></li>
     <li><a href="index.html#features" class="menu-link">Product</a></li>
     <li><a href="index.html#materials" class="menu-link">Specs</a></li>
+    <li><a href="about.html" class="menu-link">About</a></li>
     <li><a href="index.html#contact" class="menu-link">Contact</a></li>
   </ul>
   <a href="#buy" class="menu-cta menu-link">Pre-order Now</a>
@@ -414,10 +368,7 @@ footer {
   <!-- ── Gallery ── -->
   <div class="gallery load-in" style="animation-delay:.05s">
     <div class="gallery-main">
-      <span class="gallery-badge">360° View</span>
-      <canvas id="three-canvas"></canvas>
-
-      <img class="gallery-photo" data-photo="0" src="images/product_page/1.jpeg" alt="Combat Cover worn during training">
+      <img class="gallery-photo active" data-photo="0" src="images/product_page/1.jpeg" alt="Combat Cover worn during training">
       <img class="gallery-photo" data-photo="1" src="images/product_page/2.jpeg" alt="Combat Cover on a boxing glove">
       <img class="gallery-photo" data-photo="2" src="images/product_page/3.jpeg" alt="Combat Cover close fit on the wrist">
       <img class="gallery-photo" data-photo="3" src="images/product_page/4.jpeg" alt="Combat Cover worn by athletes">
@@ -431,26 +382,10 @@ footer {
       <button class="gallery-arrow gallery-next" id="gallery-next" aria-label="Next photo">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
       </button>
-
-      <div class="gallery-loader" id="gallery-loader"><span class="loader-ring"></span></div>
-      <div class="drag-hint" id="drag-hint">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-          <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="3"/>
-        </svg>
-        Drag to rotate
-      </div>
     </div>
 
     <div class="thumbs">
-      <button class="thumb active" data-view="3d" aria-label="3D view">
-        <span class="thumb-3d">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-            <path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-          </svg>
-          3D
-        </span>
-      </button>
-      <button class="thumb" data-view="0" aria-label="Photo 1"><img src="images/product_page/1.jpeg" alt=""></button>
+      <button class="thumb active" data-view="0" aria-label="Photo 1"><img src="images/product_page/1.jpeg" alt=""></button>
       <button class="thumb" data-view="1" aria-label="Photo 2"><img src="images/product_page/2.jpeg" alt=""></button>
       <button class="thumb" data-view="2" aria-label="Photo 3"><img src="images/product_page/3.jpeg" alt=""></button>
       <button class="thumb" data-view="3" aria-label="Photo 4"><img src="images/product_page/4.jpeg" alt=""></button>
@@ -479,17 +414,9 @@ footer {
 
     <div class="field-label">
       <span>Size</span>
-      <span class="size-guide">Size Guide
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M5 12h14M13 6l6 6-6 6"/>
-        </svg>
-      </span>
+      <span class="one-size-tag">One Size</span>
     </div>
-    <div class="sizes" id="sizes">
-      <button class="size-btn" data-size="S">S</button>
-      <button class="size-btn active" data-size="M">M</button>
-      <button class="size-btn" data-size="L">L</button>
-    </div>
+    <p class="one-size-note">Designed to fit most hand and wrist sizes — one size fits all.</p>
 
     <div class="field-label"><span>Quantity</span></div>
     <div class="buy-row">
@@ -500,6 +427,8 @@ footer {
       </div>
       <button class="btn btn-cart" id="add-cart">Add to Cart</button>
     </div>
+
+    <a href="#" id="checkout-link" class="btn btn-cart" style="display:none; width:100%; height:54px; background:var(--accent); margin-bottom:26px;" target="_blank" rel="noopener">Checkout →</a>
 
     <button class="btn btn-specs" id="view-specs">View Specs</button>
 
@@ -581,7 +510,7 @@ footer {
       </div>
       <div>
         <h5>Fit</h5>
-        <p>Compression fit. Sizes S / M / L. Designed to wear over hand wraps and under gloves.</p>
+        <p>Compression fit. One size, fits most. Designed to wear over hand wraps and under gloves.</p>
       </div>
     </div>
     <div class="spec">
@@ -655,7 +584,7 @@ footer {
     <h5>Support</h5>
     <ul>
       <li><a href="index.html#care">Fit &amp; Care</a></li>
-      <li><a href="#">Contact</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
       <li><a href="#">Shipping &amp; Returns</a></li>
     </ul>
   </div>
@@ -668,18 +597,72 @@ footer {
 <!-- ============================================================
      SCRIPTS
      ============================================================ -->
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.162.0/examples/jsm/"
-  }
-}
-</script>
-
 <script type="module">
-import * as THREE from 'three'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+/* ─── Shopify Storefront API config ─────────────────────────────
+   Fill these in from your Shopify custom app (Storefront API).
+   The Storefront token is public-safe — it's designed for client-side use. */
+const SHOPIFY_DOMAIN     = 'YOUR-STORE.myshopify.com'
+const STOREFRONT_TOKEN   = 'YOUR_STOREFRONT_API_TOKEN'
+const STOREFRONT_VERSION = '2024-10'
+const VARIANT_ID = 'gid://shopify/ProductVariant/REPLACE_WITH_VARIANT_ID'
+
+const STOREFRONT_URL = `https://${SHOPIFY_DOMAIN}/api/${STOREFRONT_VERSION}/graphql.json`
+const CART_ID_KEY = 'cc_cart_id'
+
+async function shopifyFetch(query, variables) {
+  const res = await fetch(STOREFRONT_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Storefront-Access-Token': STOREFRONT_TOKEN,
+    },
+    body: JSON.stringify({ query, variables }),
+  })
+  const json = await res.json()
+  if (json.errors) throw new Error(json.errors[0].message)
+  return json.data
+}
+
+const CART_FIELDS = `
+  id
+  checkoutUrl
+  totalQuantity
+  cost { totalAmount { amount currencyCode } }
+`
+
+async function getOrCreateCart() {
+  const existingId = localStorage.getItem(CART_ID_KEY)
+  if (existingId) {
+    const data = await shopifyFetch(
+      `query getCart($id: ID!) { cart(id: $id) { ${CART_FIELDS} } }`,
+      { id: existingId }
+    )
+    if (data.cart) return data.cart
+  }
+  const data = await shopifyFetch(
+    `mutation { cartCreate { cart { ${CART_FIELDS} } } }`,
+    {}
+  )
+  const cart = data.cartCreate.cart
+  localStorage.setItem(CART_ID_KEY, cart.id)
+  return cart
+}
+
+async function addLineToCart(variantId, quantity) {
+  const cart = await getOrCreateCart()
+  const data = await shopifyFetch(
+    `mutation addLine($cartId: ID!, $lines: [CartLineInput!]!) {
+       cartLinesAdd(cartId: $cartId, lines: $lines) {
+         cart { ${CART_FIELDS} }
+         userErrors { field message }
+       }
+     }`,
+    { cartId: cart.id, lines: [{ merchandiseId: variantId, quantity }] }
+  )
+  const errors = data.cartLinesAdd.userErrors
+  if (errors.length) throw new Error(errors[0].message)
+  return data.cartLinesAdd.cart
+}
 
 /* ─── Load-in ───────────────────────────────────────────────── */
 document.querySelectorAll('.load-in').forEach(el => {
@@ -700,14 +683,6 @@ mobileMenu.querySelectorAll('.menu-link').forEach(link => {
   })
 })
 
-/* ─── Size selector ─────────────────────────────────────────── */
-document.querySelectorAll('.size-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'))
-    btn.classList.add('active')
-  })
-})
-
 /* ─── Quantity ──────────────────────────────────────────────── */
 const qtyInput = document.getElementById('qty-input')
 const clampQty = v => Math.max(1, Math.min(99, v || 1))
@@ -719,13 +694,31 @@ document.getElementById('qty-plus').addEventListener('click', () => {
 })
 qtyInput.addEventListener('change', () => { qtyInput.value = clampQty(parseInt(qtyInput.value)) })
 
-/* ─── Add to cart (demo feedback) ───────────────────────────── */
+/* ─── Add to cart (Shopify Storefront API) ──────────────────── */
 const addBtn = document.getElementById('add-cart')
-addBtn.addEventListener('click', () => {
-  const size = document.querySelector('.size-btn.active').dataset.size
-  addBtn.textContent = `Added · ${size} ×${qtyInput.value}`
-  addBtn.classList.add('added')
-  setTimeout(() => { addBtn.textContent = 'Add to Cart'; addBtn.classList.remove('added') }, 1800)
+const checkoutLink = document.getElementById('checkout-link')
+
+addBtn.addEventListener('click', async () => {
+  const qty = parseInt(qtyInput.value)
+
+  addBtn.disabled = true
+  try {
+    const cart = await addLineToCart(VARIANT_ID, qty)
+    addBtn.textContent = `Added ×${qty}`
+    addBtn.classList.add('added')
+    checkoutLink.href = cart.checkoutUrl
+    checkoutLink.textContent = `Checkout · ${cart.totalQuantity} item${cart.totalQuantity > 1 ? 's' : ''} →`
+    checkoutLink.style.display = 'flex'
+  } catch (err) {
+    console.error(err)
+    addBtn.textContent = 'Error — try again'
+  } finally {
+    setTimeout(() => {
+      addBtn.textContent = 'Add to Cart'
+      addBtn.classList.remove('added')
+      addBtn.disabled = false
+    }, 1800)
+  }
 })
 
 /* ─── View specs scroll ─────────────────────────────────────── */
@@ -734,126 +727,26 @@ document.getElementById('view-specs').addEventListener('click', () => {
 })
 
 /* ─── Gallery view switching ────────────────────────────────── */
-const photos   = [...document.querySelectorAll('.gallery-photo')]
-const thumbs   = [...document.querySelectorAll('.thumb')]
-const dragHint = document.getElementById('drag-hint')
-let autoRotate = true
+const photos = [...document.querySelectorAll('.gallery-photo')]
+const thumbs = [...document.querySelectorAll('.thumb')]
 const photoViews = photos.map(p => p.dataset.photo)
-let currentPhotoIdx = -1  // -1 = 3D view active
+let currentPhotoIdx = 0
 
 function showView(view) {
   thumbs.forEach(t => t.classList.toggle('active', t.dataset.view === view))
-  if (view === '3d') {
-    photos.forEach(p => p.classList.remove('active'))
-    currentPhotoIdx = -1
-    autoRotate = true
-    dragHint.classList.remove('hide')
-  } else {
-    photos.forEach(p => p.classList.toggle('active', p.dataset.photo === view))
-    currentPhotoIdx = photoViews.indexOf(view)
-    autoRotate = false
-    dragHint.classList.add('hide')
-  }
+  photos.forEach(p => p.classList.toggle('active', p.dataset.photo === view))
+  currentPhotoIdx = photoViews.indexOf(view)
 }
 thumbs.forEach(t => t.addEventListener('click', () => showView(t.dataset.view)))
 
-/* 360 badge click returns to 3D view */
-document.querySelector('.gallery-badge').addEventListener('click', () => showView('3d'))
-
-/* Prev / Next arrows — when coming from 3D, Next → first photo, Prev → last photo */
 document.getElementById('gallery-prev').addEventListener('click', () => {
-  const start = currentPhotoIdx === -1 ? photoViews.length : currentPhotoIdx
-  currentPhotoIdx = (start - 1 + photoViews.length) % photoViews.length
+  currentPhotoIdx = (currentPhotoIdx - 1 + photoViews.length) % photoViews.length
   showView(photoViews[currentPhotoIdx])
 })
 document.getElementById('gallery-next').addEventListener('click', () => {
   currentPhotoIdx = (currentPhotoIdx + 1) % photoViews.length
   showView(photoViews[currentPhotoIdx])
 })
-
-/* ─── THREE.JS — contained product viewer ───────────────────── */
-const canvas = document.getElementById('three-canvas')
-const wrap   = canvas.parentElement
-const sizeOf = () => Math.min(wrap.clientWidth, wrap.clientHeight)
-
-const scene  = new THREE.Scene()
-const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100)
-camera.position.set(0, 0, 7)
-
-const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-renderer.toneMapping = THREE.ACESFilmicToneMapping
-renderer.toneMappingExposure = 1.25
-
-function resize() {
-  const w = wrap.clientWidth, h = wrap.clientHeight
-  camera.aspect = w / h
-  camera.updateProjectionMatrix()
-  renderer.setSize(w, h, false)
-}
-resize()
-window.addEventListener('resize', resize)
-
-/* Lighting — same warm key/fill/rim as the landing hero */
-scene.add(new THREE.AmbientLight(0xffffff, 0.6))
-const key = new THREE.DirectionalLight(0xffffff, 3.5); key.position.set(5, 6, 6); scene.add(key)
-const fill = new THREE.DirectionalLight(0xD4C5A9, 2.0); fill.position.set(-5, -1, 4); scene.add(fill)
-const rim = new THREE.DirectionalLight(0x8B7355, 1.8); rim.position.set(0, 4, -6); scene.add(rim)
-scene.add(new THREE.HemisphereLight(0xF7F7F7, 0x8B7355, 0.5))
-
-const group = new THREE.Group()
-scene.add(group)
-
-const loader = new GLTFLoader()
-loader.load('3d_model/3dmodel.glb', gltf => {
-  const src = gltf.scene
-  const box = new THREE.Box3().setFromObject(src)
-  const size = box.getSize(new THREE.Vector3())
-  const center = box.getCenter(new THREE.Vector3())
-  const maxDim = Math.max(size.x, size.y, size.z)
-  src.position.sub(center)
-  src.scale.setScalar(3.0 / maxDim)
-  group.add(src)
-  group.rotation.set(-0.15, 0.5, 0)
-  document.getElementById('gallery-loader').classList.add('hidden')
-}, undefined, () => {
-  // If the model fails to load, fall back to the first photo
-  document.getElementById('gallery-loader').classList.add('hidden')
-  showView('0')
-})
-
-/* Drag-to-rotate */
-let dragging = false, lastX = 0, lastY = 0
-let targetRotY = 0.5, targetRotX = -0.15
-
-canvas.addEventListener('pointerdown', e => {
-  dragging = true; lastX = e.clientX; lastY = e.clientY
-  autoRotate = false; dragHint.classList.add('hide')
-  canvas.setPointerCapture(e.pointerId)
-})
-canvas.addEventListener('pointermove', e => {
-  if (!dragging) return
-  targetRotY += (e.clientX - lastX) * 0.01
-  targetRotX += (e.clientY - lastY) * 0.008
-  targetRotX = Math.max(-0.8, Math.min(0.8, targetRotX))
-  lastX = e.clientX; lastY = e.clientY
-})
-canvas.addEventListener('pointerup',     () => { dragging = false })
-canvas.addEventListener('pointercancel', () => { dragging = false })
-canvas.style.touchAction = 'pan-y'
-canvas.style.cursor = 'grab'
-
-/* Render loop */
-const clock = new THREE.Clock()
-;(function animate() {
-  requestAnimationFrame(animate)
-  const dt = clock.getDelta()
-  if (autoRotate) targetRotY += dt * 0.5
-  group.rotation.y += (targetRotY - group.rotation.y) * 0.1
-  group.rotation.x += (targetRotX - group.rotation.x) * 0.1
-  group.position.y = Math.sin(clock.getElapsedTime() * 0.8) * 0.05
-  renderer.render(scene, camera)
-})()
 </script>
 </body>
 </html>
