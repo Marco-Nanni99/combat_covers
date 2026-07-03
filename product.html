@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cart.css">
 <style>
 
 /* ============================================================
@@ -336,17 +337,25 @@ footer {
      ============================================================ -->
 <nav>
   <a href="index.html" class="nav-logo">Combat <em>Cover</em></a>
-  <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="index.html#features">Product</a></li>
-    <li><a href="index.html#materials">Specs</a></li>
-    <li><a href="about.html">About</a></li>
-    <li><a href="index.html#contact">Contact</a></li>
-    <li><a href="#buy" class="cta-link">Pre-order</a></li>
-  </ul>
-  <button class="hamburger" id="hamburger" aria-label="Open menu">
-    <span></span><span></span><span></span>
-  </button>
+  <div class="nav-menu">
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="index.html#features">Product</a></li>
+      <li><a href="index.html#materials">Specs</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="index.html#contact">Contact</a></li>
+      <li><a href="#buy" class="cta-link">Pre-order</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="cart-toggle" aria-label="Open cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+        <span class="cart-badge">0</span>
+      </button>
+      <button class="hamburger" id="hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
 </nav>
 
 <div id="mobile-menu">
@@ -406,7 +415,7 @@ footer {
     </p>
 
     <div class="price-row">
-      <span class="price">$29.00</span>
+      <span class="price">$25.00</span>
       <span class="price-cur">USD</span>
     </div>
 
@@ -427,8 +436,6 @@ footer {
       </div>
       <button class="btn btn-cart" id="add-cart">Add to Cart</button>
     </div>
-
-    <a href="#" id="checkout-link" class="btn btn-cart" style="display:none; width:100%; height:54px; background:var(--accent); margin-bottom:26px;" target="_blank" rel="noopener">Checkout →</a>
 
     <button class="btn btn-specs" id="view-specs">View Specs</button>
 
@@ -597,72 +604,9 @@ footer {
 <!-- ============================================================
      SCRIPTS
      ============================================================ -->
+<script type="module" src="cart.js"></script>
 <script type="module">
-/* ─── Shopify Storefront API config ─────────────────────────────
-   Fill these in from your Shopify custom app (Storefront API).
-   The Storefront token is public-safe — it's designed for client-side use. */
-const SHOPIFY_DOMAIN     = 'YOUR-STORE.myshopify.com'
-const STOREFRONT_TOKEN   = 'YOUR_STOREFRONT_API_TOKEN'
-const STOREFRONT_VERSION = '2024-10'
-const VARIANT_ID = 'gid://shopify/ProductVariant/REPLACE_WITH_VARIANT_ID'
-
-const STOREFRONT_URL = `https://${SHOPIFY_DOMAIN}/api/${STOREFRONT_VERSION}/graphql.json`
-const CART_ID_KEY = 'cc_cart_id'
-
-async function shopifyFetch(query, variables) {
-  const res = await fetch(STOREFRONT_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Shopify-Storefront-Access-Token': STOREFRONT_TOKEN,
-    },
-    body: JSON.stringify({ query, variables }),
-  })
-  const json = await res.json()
-  if (json.errors) throw new Error(json.errors[0].message)
-  return json.data
-}
-
-const CART_FIELDS = `
-  id
-  checkoutUrl
-  totalQuantity
-  cost { totalAmount { amount currencyCode } }
-`
-
-async function getOrCreateCart() {
-  const existingId = localStorage.getItem(CART_ID_KEY)
-  if (existingId) {
-    const data = await shopifyFetch(
-      `query getCart($id: ID!) { cart(id: $id) { ${CART_FIELDS} } }`,
-      { id: existingId }
-    )
-    if (data.cart) return data.cart
-  }
-  const data = await shopifyFetch(
-    `mutation { cartCreate { cart { ${CART_FIELDS} } } }`,
-    {}
-  )
-  const cart = data.cartCreate.cart
-  localStorage.setItem(CART_ID_KEY, cart.id)
-  return cart
-}
-
-async function addLineToCart(variantId, quantity) {
-  const cart = await getOrCreateCart()
-  const data = await shopifyFetch(
-    `mutation addLine($cartId: ID!, $lines: [CartLineInput!]!) {
-       cartLinesAdd(cartId: $cartId, lines: $lines) {
-         cart { ${CART_FIELDS} }
-         userErrors { field message }
-       }
-     }`,
-    { cartId: cart.id, lines: [{ merchandiseId: variantId, quantity }] }
-  )
-  const errors = data.cartLinesAdd.userErrors
-  if (errors.length) throw new Error(errors[0].message)
-  return data.cartLinesAdd.cart
-}
+const VARIANT_ID = 'gid://shopify/ProductVariant/46290717606124'
 
 /* ─── Load-in ───────────────────────────────────────────────── */
 document.querySelectorAll('.load-in').forEach(el => {
@@ -694,21 +638,17 @@ document.getElementById('qty-plus').addEventListener('click', () => {
 })
 qtyInput.addEventListener('change', () => { qtyInput.value = clampQty(parseInt(qtyInput.value)) })
 
-/* ─── Add to cart (Shopify Storefront API) ──────────────────── */
+/* ─── Add to cart (hands off to the shared cart module) ─────── */
 const addBtn = document.getElementById('add-cart')
-const checkoutLink = document.getElementById('checkout-link')
 
 addBtn.addEventListener('click', async () => {
-  const qty = parseInt(qtyInput.value)
+  const qty = clampQty(parseInt(qtyInput.value))
 
   addBtn.disabled = true
   try {
-    const cart = await addLineToCart(VARIANT_ID, qty)
+    await window.CombatCart.addLine(VARIANT_ID, qty)
     addBtn.textContent = `Added ×${qty}`
     addBtn.classList.add('added')
-    checkoutLink.href = cart.checkoutUrl
-    checkoutLink.textContent = `Checkout · ${cart.totalQuantity} item${cart.totalQuantity > 1 ? 's' : ''} →`
-    checkoutLink.style.display = 'flex'
   } catch (err) {
     console.error(err)
     addBtn.textContent = 'Error — try again'

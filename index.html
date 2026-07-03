@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cart.css">
 <style>
 
 /* ============================================================
@@ -696,17 +697,25 @@ footer {
      ============================================================ -->
 <nav id="navbar">
   <a href="#" class="nav-logo">Combat <em>Cover</em></a>
-  <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="product.html">Product</a></li>
-    <li><a href="#materials">Specs</a></li>
-    <li><a href="about.html">About</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="product.html" class="cta-link">Pre-order</a></li>
-  </ul>
-  <button class="hamburger" id="hamburger" aria-label="Open menu">
-    <span></span><span></span><span></span>
-  </button>
+  <div class="nav-menu">
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="product.html">Product</a></li>
+      <li><a href="#materials">Specs</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="product.html" class="cta-link">Pre-order</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="cart-toggle" aria-label="Open cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+        <span class="cart-badge">0</span>
+      </button>
+      <button class="hamburger" id="hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
 </nav>
 
 <div id="mobile-menu">
@@ -1037,13 +1046,14 @@ footer {
      ============================================================ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script type="module" src="cart.js"></script>
 
 <script>
 gsap.registerPlugin(ScrollTrigger)
 
 // ─── Klaviyo signup bridge ─────────────────────────────────────
 // Account > Settings > API Keys > Public API Key ("Company ID")
-const KLAVIYO_COMPANY_ID = 'YOUR_KLAVIYO_PUBLIC_API_KEY'
+const KLAVIYO_COMPANY_ID = 'RicFpb'
 // Lists & Segments > your list > Settings
 const KLAVIYO_LIST_ID = 'YOUR_KLAVIYO_LIST_ID'
 
