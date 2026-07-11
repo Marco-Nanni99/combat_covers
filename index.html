@@ -646,6 +646,15 @@ footer {
 }
 .contact-input:focus { border-color: var(--text); }
 .contact-input::placeholder { color: var(--mid); }
+.contact-fields {
+  display: flex; flex-direction: column; gap: 12px;
+  max-width: 460px; margin: 40px auto 0;
+}
+textarea.contact-input {
+  height: auto; min-height: 128px; padding: 16px 20px;
+  line-height: 1.55; resize: vertical;
+}
+.contact-fields .btn { align-self: flex-start; }
 .contact-thanks {
   margin-top: 16px; font-size: 14px;
   color: var(--accent); font-weight: 600;
@@ -704,7 +713,7 @@ footer {
       <li><a href="#materials">Specs</a></li>
       <li><a href="about.html">About</a></li>
       <li><a href="#contact">Contact</a></li>
-      <li><a href="product.html" class="cta-link">Pre-order</a></li>
+      <li><a href="product.html" class="cta-link">Order Now</a></li>
     </ul>
     <div class="nav-right">
       <button class="cart-toggle" aria-label="Open cart">
@@ -726,7 +735,7 @@ footer {
     <li><a href="about.html" class="menu-link">About</a></li>
     <li><a href="#contact" class="menu-link">Contact</a></li>
   </ul>
-  <a href="product.html" class="menu-cta menu-link">Pre-order Now</a>
+  <a href="product.html" class="menu-cta menu-link">Order Now</a>
 </div>
 
 <!-- ============================================================
@@ -750,7 +759,7 @@ footer {
         and stabilize your gloves during high-intensity training.
       </p>
       <div class="hero-actions load-in" style="animation-delay:.65s">
-        <a href="product.html" class="btn btn-dark">Pre-order</a>
+        <a href="product.html" class="btn btn-dark">Order Now</a>
         <a href="#features" class="btn btn-ghost">See features</a>
       </div>
     </div>
@@ -826,7 +835,7 @@ footer {
       </div>
       <p class="benefit-num">04 Compatibility</p>
       <h3 class="benefit-title">One Fit. All Gloves.</h3>
-      <p class="benefit-body">Designed to stretch across MMA, boxing, and hybrid glove systems. One size fits the wrist base of most combat gloves.</p>
+      <p class="benefit-body">Designed to stretch across MMA and hybrid glove systems. One size fits the wrist base of most combat gloves.</p>
     </div>
 
   </div>
@@ -910,7 +919,7 @@ footer {
         <span class="include-num">01</span>
         <div>
           <h4>2 Combat Covers</h4>
-          <p>One complete pair — fits the wrist and velcro base of standard MMA, boxing, and combat gloves.</p>
+          <p>One complete pair — fits the wrist and velcro base of standard MMA and combat gloves.</p>
         </div>
       </div>
       <div class="include-item reveal d1">
@@ -918,13 +927,6 @@ footer {
         <div>
           <h4>Reusable Mesh Wash Bag</h4>
           <p>Protective mesh laundry bag. Required for machine washing to maintain shape and longevity.</p>
-        </div>
-      </div>
-      <div class="include-item reveal d2">
-        <span class="include-num">03</span>
-        <div>
-          <h4>Care Card</h4>
-          <p>Clear care instructions to keep your Combat Covers performing through years of training.</p>
         </div>
       </div>
     </div>
@@ -952,8 +954,8 @@ footer {
           One size, stretch spandex accommodates a range of glove widths
         </li>
         <li>
-          <span class="care-icon"><img src="images/landing_page/instructions/Compatible with MMA, boxing, and hybrid glove systems.png" alt=""></span>
-          Compatible with MMA, boxing, and hybrid glove systems
+          <span class="care-icon"><img src="images/landing_page/instructions/Compatible with MMA and hybrid glove systems.png" alt=""></span>
+          Compatible with MMA and hybrid glove systems
         </li>
       </ul>
     </div>
@@ -987,8 +989,8 @@ footer {
 <section id="cta">
   <p class="cta-pre reveal">One pair — protective gear that works</p>
   <h2 class="cta-head reveal d1">Train Better.<br>Protect Your Partners.</h2>
-  <p class="cta-sub reveal d2">Combat Covers — sold as one piece: 2 sleeves, 1 mesh bag, 1 care card.</p>
-  <a href="product.html" class="btn btn-light reveal d3">Pre-order Now</a>
+  <p class="cta-sub reveal d2">Combat Covers — sold as one piece: 2 sleeves, 1 mesh bag.</p>
+  <a href="product.html" class="btn btn-light reveal d3">Order Now</a>
 </section>
 
 <!-- ============================================================
@@ -997,13 +999,15 @@ footer {
 <section id="contact">
   <div class="contact-inner">
     <span class="overline reveal">Get in Touch</span>
-    <h2 class="headline reveal d1" style="font-size:clamp(28px,3vw,44px);">Stay in the Loop</h2>
+    <h2 class="headline reveal d1" style="font-size:clamp(28px,3vw,44px);">Contact Us</h2>
     <p class="body-text reveal d2" style="max-width:none;">
-      Be the first to know when pre-orders open. Drop your email and we'll reach out directly.
+      Questions about Combat Covers? Send us a message and we'll get back to you directly.
     </p>
     <form class="contact-form reveal d3" id="contact-form">
-      <div class="contact-row">
+      <div class="contact-fields">
+        <input type="text" placeholder="Full name" class="contact-input" id="contact-name" required>
         <input type="email" placeholder="your@email.com" class="contact-input" id="contact-email" required>
+        <textarea placeholder="Your message" class="contact-input" id="contact-message" required></textarea>
         <button type="submit" class="btn btn-dark">Send</button>
       </div>
       <p class="contact-thanks" id="contact-thanks" style="display:none;">Thanks, we'll be in touch soon.</p>
@@ -1032,7 +1036,8 @@ footer {
     <ul>
       <li><a href="#care">Fit &amp; Care</a></li>
       <li><a href="#contact">Contact</a></li>
-      <li><a href="#">Shipping &amp; Returns</a></li>
+      <li><a href="terms.html">Terms &amp; Conditions</a></li>
+      <li><a href="privacy.html">Privacy Policy</a></li>
     </ul>
   </div>
   <div class="ft-copy">
@@ -1055,7 +1060,7 @@ gsap.registerPlugin(ScrollTrigger)
 // Account > Settings > API Keys > Public API Key ("Company ID")
 const KLAVIYO_COMPANY_ID = 'RicFpb'
 // Lists & Segments > your list > Settings
-const KLAVIYO_LIST_ID = 'YOUR_KLAVIYO_LIST_ID'
+const KLAVIYO_LIST_ID = 'VSGjx4'
 
 // ─── Hero load-in ────────────────────────────────────────────
 document.querySelectorAll('.load-in').forEach(el => {
@@ -1112,10 +1117,19 @@ onScroll()
 // ─── Contact form ─────────────────────────────────────────────
 document.getElementById('contact-form').addEventListener('submit', async e => {
   e.preventDefault()
-  const emailInput = document.getElementById('contact-email')
-  const submitBtn  = e.target.querySelector('button[type="submit"]')
-  const thanks     = document.getElementById('contact-thanks')
-  const email      = emailInput.value.trim()
+  const nameInput    = document.getElementById('contact-name')
+  const emailInput   = document.getElementById('contact-email')
+  const messageInput = document.getElementById('contact-message')
+  const submitBtn    = e.target.querySelector('button[type="submit"]')
+  const thanks       = document.getElementById('contact-thanks')
+
+  const fullName = nameInput.value.trim()
+  const email    = emailInput.value.trim()
+  const message  = messageInput.value.trim()
+
+  // Split the full name into first/last for the Klaviyo profile.
+  const [firstName, ...rest] = fullName.split(/\s+/)
+  const lastName = rest.join(' ')
 
   submitBtn.disabled = true
   try {
@@ -1126,7 +1140,12 @@ document.getElementById('contact-form').addEventListener('submit', async e => {
         data: {
           type: 'subscription',
           attributes: {
-            profile: { data: { type: 'profile', attributes: { email } } },
+            profile: { data: { type: 'profile', attributes: {
+              email,
+              first_name: firstName,
+              last_name: lastName,
+              properties: { message },
+            } } },
           },
           relationships: {
             list: { data: { type: 'list', id: KLAVIYO_LIST_ID } },
@@ -1134,8 +1153,10 @@ document.getElementById('contact-form').addEventListener('submit', async e => {
         },
       }),
     })
-    if (!res.ok) throw new Error('Signup failed')
+    if (!res.ok) throw new Error('Send failed')
+    nameInput.value = ''
     emailInput.value = ''
+    messageInput.value = ''
     thanks.textContent = "Thanks, we'll be in touch soon."
   } catch (err) {
     thanks.textContent = 'Something went wrong — please try again.'
