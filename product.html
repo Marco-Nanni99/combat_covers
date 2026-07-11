@@ -153,7 +153,9 @@ nav {
 }
 .lede { font-size: 16px; line-height: 1.65; color: var(--mid); max-width: 440px; margin-bottom: 32px; }
 
-.price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 34px; }
+.price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 34px;
+             opacity: 0; transition: opacity 0.3s ease; }
+.price-row.ready { opacity: 1; }
 .price { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
 .price-cur { font-size: 14px; font-weight: 600; color: var(--mid); }
 
@@ -414,9 +416,9 @@ footer {
       stabilizes your gloves during high-intensity training.
     </p>
 
-    <div class="price-row">
-      <span class="price">$25.00</span>
-      <span class="price-cur">USD</span>
+    <div class="price-row" id="price-row">
+      <span class="price" id="price">$25.00</span>
+      <span class="price-cur" id="price-cur">USD</span>
     </div>
 
     <div class="divider"></div>
@@ -608,6 +610,20 @@ footer {
 <script type="module" src="cart.js"></script>
 <script type="module">
 const VARIANT_ID = 'gid://shopify/ProductVariant/46290717606124'
+
+/* ─── Live price from Shopify (falls back to the static value on error) ─── */
+;(async () => {
+  try {
+    const { amount, currencyCode } = await window.CombatCart.getVariantPrice(VARIANT_ID)
+    document.getElementById('price').textContent = `$${Number(amount).toFixed(2)}`
+    document.getElementById('price-cur').textContent = currencyCode
+  } catch (err) {
+    console.error(err) // keep the static fallback already in the markup
+  } finally {
+    // Reveal only once we have the final value, so a stale price never flashes.
+    document.getElementById('price-row').classList.add('ready')
+  }
+})()
 
 /* ─── Load-in ───────────────────────────────────────────────── */
 document.querySelectorAll('.load-in').forEach(el => {

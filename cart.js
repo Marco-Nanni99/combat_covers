@@ -203,6 +203,15 @@ function clearNotice() {
   drawerEls.drawer.querySelector('.cart-notice').style.display = 'none'
 }
 
+// Shown while the cart is being fetched from Shopify, so opening the drawer
+// never flashes an empty/stale state before the real contents arrive.
+function showLoading() {
+  const { drawer } = ensureDrawer()
+  clearNotice()
+  drawer.querySelector('.cart-drawer-body').innerHTML = '<p class="cart-empty">Loading…</p>'
+  drawer.querySelector('.cart-drawer-foot').style.display = 'none'
+}
+
 /* ─── Render cart contents into the drawer + badge ──────────── */
 function renderCart(cart) {
   const { drawer } = ensureDrawer()
@@ -303,6 +312,7 @@ function updateBadge(count) {
 document.querySelectorAll('.cart-toggle').forEach(btn => {
   btn.addEventListener('click', async () => {
     openDrawer()
+    showLoading()
     try {
       renderCart(await getOrCreateCart())
     } catch (err) {
@@ -312,6 +322,22 @@ document.querySelectorAll('.cart-toggle').forEach(btn => {
   })
 })
 
+// Look up a single variant's live price straight from Shopify, so the product
+// page never hard-codes a number that can drift from the store.
+async function getVariantPrice(variantId) {
+  const data = await shopifyFetch(
+    `query getVariant($id: ID!) {
+       node(id: $id) {
+         ... on ProductVariant { price { amount currencyCode } }
+       }
+     }`,
+    { id: variantId }
+  )
+  const price = data.node?.price
+  if (!price) throw new Error('Could not load price')
+  return price
+}
+
 /* ─── Public entry point used by product.html's Add to Cart button ─── */
 window.CombatCart = {
   addLine: async (variantId, quantity) => {
@@ -320,6 +346,7 @@ window.CombatCart = {
     openDrawer()
     return cart
   },
+  getVariantPrice,
 }
 
 /* ─── Init: show the correct badge count on every page load ─── */
